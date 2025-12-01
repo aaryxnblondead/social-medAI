@@ -11,29 +11,9 @@
 ## 🎯 Development Flow Timeline
 
 ```mermaid
-graph TD
-  %%{init: {'theme':'dark'}}%%
-  graph LR
-  A1([<i class='fa fa-cogs'></i><br/>Phase 1<br/>Foundation Setup<br/>2-3h]) --> A2([<i class='fa fa-server'></i><br/>Phase 2<br/>Backend Boilerplate<br/>1d]) --> A3([<i class='fa fa-database'></i><br/>Phase 3<br/>Database Models<br/>1d]) --> A4([<i class='fa fa-user-shield'></i><br/>Phase 4<br/>Auth System<br/>1d]) --> A5([<i class='fa fa-id-card'></i><br/>Phase 5<br/>Brand Management<br/>1d]) --> A6([<i class='fa fa-chart-line'></i><br/>Phase 6<br/>Trend Detection<br/>2d]) --> A7([<i class='fa fa-keyboard'></i><br/>Phase 7<br/>Copy Generation<br/>2d]) --> A8([<i class='fa fa-image'></i><br/>Phase 8<br/>Graphic Generation<br/>2d]) --> A9([<i class='fa fa-tasks'></i><br/>Phase 9<br/>Post Management<br/>1.5d]) --> A10([<i class='fa fa-share-square'></i><br/>Phase 10<br/>Publishing<br/>1.5d]) --> A11([<i class='fa fa-chart-bar'></i><br/>Phase 11<br/>Engagement Tracking<br/>2d]) --> A12([<i class='fa fa-robot'></i><br/>Phase 12<br/>RL System<br/>2d]) --> A13([<i class='fa fa-desktop'></i><br/>Phase 13<br/>Frontend Boilerplate<br/>1d]) --> A14([<i class='fa fa-pencil-ruler'></i><br/>Phase 14<br/>Post Gen UI<br/>2d]) --> A15([<i class='fa fa-chart-pie'></i><br/>Phase 15<br/>Analytics Dashboard<br/>2d]) --> A16([<i class='fa fa-cloud-upload-alt'></i><br/>Phase 16<br/>Deployment<br/>1d]) --> A17([<i class='fa fa-users'></i><br/>Phase 17<br/>Beta Testing<br/>2-3d])
-  %% Arrow style for infographic look
-  linkStyle default stroke:#fff,stroke-width:4px
-  style A1 fill:#ffa726,stroke:#fff,stroke-width:2px,color:#fff
-  style A2 fill:#66bb6a,stroke:#fff,stroke-width:2px,color:#fff
-  style A3 fill:#29b6f6,stroke:#fff,stroke-width:2px,color:#fff
-  style A4 fill:#5c6bc0,stroke:#fff,stroke-width:2px,color:#fff
-  style A5 fill:#ab47bc,stroke:#fff,stroke-width:2px,color:#fff
-  style A6 fill:#ec407a,stroke:#fff,stroke-width:2px,color:#fff
-  style A7 fill:#ff7043,stroke:#fff,stroke-width:2px,color:#fff
-  style A8 fill:#26a69a,stroke:#fff,stroke-width:2px,color:#fff
-  style A9 fill:#8d6e63,stroke:#fff,stroke-width:2px,color:#fff
-  style A10 fill:#d4e157,stroke:#fff,stroke-width:2px,color:#fff
-  style A11 fill:#42a5f5,stroke:#fff,stroke-width:2px,color:#fff
-  style A12 fill:#7e57c2,stroke:#fff,stroke-width:2px,color:#fff
-  style A13 fill:#26c6da,stroke:#fff,stroke-width:2px,color:#fff
-  style A14 fill:#ef5350,stroke:#fff,stroke-width:2px,color:#fff
-  style A15 fill:#8bc34a,stroke:#fff,stroke-width:2px,color:#fff
-  style A16 fill:#ffa726,stroke:#fff,stroke-width:2px,color:#fff
-  style A17 fill:#ec407a,stroke:#fff,stroke-width:2px,color:#fff
+%%{init: {'theme':'dark'}}%%
+graph LR
+  A1([Phase 1: Foundation Setup\n2-3h]) --> A2([Phase 2: Backend Boilerplate\n1d]) --> A3([Phase 3: Database Models\n1d]) --> A4([Phase 4: Auth System\n1d]) --> A5([Phase 5: Brand Management\n1d]) --> A6([Phase 6: Trend Detection\n2d]) --> A7([Phase 7: Copy Generation\n2d]) --> A8([Phase 8: Graphic Generation\n2d]) --> A9([Phase 9: Post Management\n1.5d]) --> A10([Phase 10: Publishing\n1.5d]) --> A11([Phase 11: Engagement Tracking\n2d]) --> A12([Phase 12: RL System\n2d]) --> A13([Phase 13: Frontend Boilerplate\n1d]) --> A14([Phase 14: Post Gen UI\n2d]) --> A15([Phase 15: Analytics Dashboard\n2d]) --> A16([Phase 16: Deployment\n1d]) --> A17([Phase 17: Beta Testing\n2-3d])
 ```
 
 ## Core Principle
