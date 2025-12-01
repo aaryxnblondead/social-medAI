@@ -10,6 +10,44 @@
 
 ## 🎯 Development Flow Timeline
 
+```mermaid
+graph TD
+    A[Phase 1: Foundation Setup<br/>2-3 hours] --> B[Phase 2: Local Backend Boilerplate<br/>1 day]
+    B --> C[Phase 3: Database Models<br/>1 day]
+    C --> D[Phase 4: Authentication System<br/>1 day]
+    D --> E[Phase 5: Brand Management Routes<br/>1 day]
+    E --> F[Phase 6: Trend Detection System<br/>2 days]
+    F --> G[Phase 7: Copy Generation<br/>LLM - 2 days]
+    G --> H[Phase 8: Graphic Generation<br/>Stability AI - 2 days]
+    H --> I[Phase 9: Post Management<br/>1.5 days]
+    I --> J[Phase 10: Social Media Publishing<br/>1.5 days]
+    J --> K[Phase 11: Engagement Tracking<br/>2 days]
+    K --> L[Phase 12: RL System<br/>2 days]
+    L --> M[Phase 13: Frontend Boilerplate<br/>1 day]
+    M --> N[Phase 14: Post Generation Interface<br/>2 days]
+    N --> O[Phase 15: Analytics Dashboard<br/>2 days]
+    O --> P[Phase 16: Deployment Setup<br/>1 day]
+    P --> Q[Phase 17: Beta Testing<br/>2-3 days]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+    style E fill:#fce4ec
+    style F fill:#f1f8e9
+    style G fill:#e0f2f1
+    style H fill:#f3e5f5
+    style I fill:#fff8e1
+    style J fill:#fce4ec
+    style K fill:#e8f5e8
+    style L fill:#e1f5fe
+    style M fill:#f3e5f5
+    style N fill:#fff3e0
+    style O fill:#fce4ec
+    style P fill:#f1f8e9
+    style Q fill:#e0f2f1
+```
+
 ## Core Principle
 Build in **layers of dependency**, not in time-based sprints. Each phase depends on successful completion of previous phases. This ensures you never build on unstable foundations.
 
