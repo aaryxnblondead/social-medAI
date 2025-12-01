@@ -11,9 +11,12 @@
 ## 🎯 Development Flow Timeline
 
 ```mermaid
-%%{init: {'theme':'dark'}}%%
+%%{init: {'theme':'dark', 'themeVariables': { 'fontSize': '20px' }}}%%
 graph LR
-  A1([Phase 1: Foundation Setup\n2-3h]) --> A2([Phase 2: Backend Boilerplate\n1d]) --> A3([Phase 3: Database Models\n1d]) --> A4([Phase 4: Auth System\n1d]) --> A5([Phase 5: Brand Management\n1d]) --> A6([Phase 6: Trend Detection\n2d]) --> A7([Phase 7: Copy Generation\n2d]) --> A8([Phase 8: Graphic Generation\n2d]) --> A9([Phase 9: Post Management\n1.5d]) --> A10([Phase 10: Publishing\n1.5d]) --> A11([Phase 11: Engagement Tracking\n2d]) --> A12([Phase 12: RL System\n2d]) --> A13([Phase 13: Frontend Boilerplate\n1d]) --> A14([Phase 14: Post Gen UI\n2d]) --> A15([Phase 15: Analytics Dashboard\n2d]) --> A16([Phase 16: Deployment\n1d]) --> A17([Phase 17: Beta Testing\n2-3d])
+  A1([Phase 1: Foundation Setup]) --> A2([Phase 2: Backend Boilerplate]) --> A3([Phase 3: Database Models]) --> A4([Phase 4: Auth System]) --> A5([Phase 5: Brand Management])
+  A5 --> A6([Phase 6: Trend Detection]) --> A7([Phase 7: Copy Generation]) --> A8([Phase 8: Graphic Generation]) --> A9([Phase 9: Post Management])
+  A9 --> A10([Phase 10: Publishing]) --> A11([Phase 11: Engagement Tracking]) --> A12([Phase 12: RL System]) --> A13([Phase 13: Frontend Boilerplate])
+  A13 --> A14([Phase 14: Post Gen UI]) --> A15([Phase 15: Analytics Dashboard]) --> A16([Phase 16: Deployment]) --> A17([Phase 17: Beta Testing])
 ```
 
 ## Core Principle
