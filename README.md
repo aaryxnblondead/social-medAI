@@ -1347,28 +1347,27 @@ graph LR
         A3["Reddit API"]
         A4["Brand Past Posts"]
     end
-    
-    subgraph "Processing Layer"
-        B1["Trend Detector<br/>Volume + Momentum"]
-        B2["Brand Voice Analyzer<br/>Embeddings"]
-        B3["Relevance Scorer<br/>Brand vs Trend Match"]
-    end
-    
-    subgraph "ML/AI Layer"
-        C1["Groq LLM<br/>Copy Generation"]
-        C2["Stability AI<br/>Image Generation"]
-        C3["RL Agent<br/>Trend Selection"]
-    end
-    
-    subgraph "Storage Layer"
-        D1["MongoDB<br/>Brands, Posts, Trends"]
-        D2["Redis<br/>Cache Layer"]
-        D3["Cloudinary<br/>Image CDN"]
-    end
-    
-    subgraph "Publishing Layer"
-        E1["Twitter API"]
-        E2["LinkedIn API"]
+      %%{init: {'theme':'dark'}}%%
+      graph LR
+      A1([Phase 1\nFoundation Setup\n2-3h]) --> A2([Phase 2\nBackend Boilerplate\n1d]) --> A3([Phase 3\nDatabase Models\n1d]) --> A4([Phase 4\nAuth System\n1d]) --> A5([Phase 5\nBrand Management\n1d]) --> A6([Phase 6\nTrend Detection\n2d]) --> A7([Phase 7\nCopy Generation\n2d]) --> A8([Phase 8\nGraphic Generation\n2d]) --> A9([Phase 9\nPost Management\n1.5d]) --> A10([Phase 10\nPublishing\n1.5d]) --> A11([Phase 11\nEngagement Tracking\n2d]) --> A12([Phase 12\nRL System\n2d]) --> A13([Phase 13\nFrontend Boilerplate\n1d]) --> A14([Phase 14\nPost Gen UI\n2d]) --> A15([Phase 15\nAnalytics Dashboard\n2d]) --> A16([Phase 16\nDeployment\n1d]) --> A17([Phase 17\nBeta Testing\n2-3d])
+      linkStyle default stroke:#fff,stroke-width:4px
+      style A1 fill:#ffa726,stroke:#fff,stroke-width:2px,color:#fff
+      style A2 fill:#66bb6a,stroke:#fff,stroke-width:2px,color:#fff
+      style A3 fill:#29b6f6,stroke:#fff,stroke-width:2px,color:#fff
+      style A4 fill:#5c6bc0,stroke:#fff,stroke-width:2px,color:#fff
+      style A5 fill:#ab47bc,stroke:#fff,stroke-width:2px,color:#fff
+      style A6 fill:#ec407a,stroke:#fff,stroke-width:2px,color:#fff
+      style A7 fill:#ff7043,stroke:#fff,stroke-width:2px,color:#fff
+      style A8 fill:#26a69a,stroke:#fff,stroke-width:2px,color:#fff
+      style A9 fill:#8d6e63,stroke:#fff,stroke-width:2px,color:#fff
+      style A10 fill:#d4e157,stroke:#fff,stroke-width:2px,color:#fff
+      style A11 fill:#42a5f5,stroke:#fff,stroke-width:2px,color:#fff
+      style A12 fill:#7e57c2,stroke:#fff,stroke-width:2px,color:#fff
+      style A13 fill:#26c6da,stroke:#fff,stroke-width:2px,color:#fff
+      style A14 fill:#ef5350,stroke:#fff,stroke-width:2px,color:#fff
+      style A15 fill:#8bc34a,stroke:#fff,stroke-width:2px,color:#fff
+      style A16 fill:#ffa726,stroke:#fff,stroke-width:2px,color:#fff
+      style A17 fill:#ec407a,stroke:#fff,stroke-width:2px,color:#fff
         E3["Schedule Queue"]
     end
     
