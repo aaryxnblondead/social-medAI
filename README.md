@@ -16,7 +16,7 @@ graph LR
   A1([Phase 1: Foundation Setup]) --> A2([Phase 2: Backend Boilerplate]) --> A3([Phase 3: Database Models]) --> A4([Phase 4: Auth System]) --> A5([Phase 5: Brand Management])
   A5 --> A6([Phase 6: Trend Detection]) --> A7([Phase 7: Copy Generation]) --> A8([Phase 8: Graphic Generation]) --> A9([Phase 9: Post Management])
   A9 --> A10([Phase 10: Publishing]) --> A11([Phase 11: Engagement Tracking]) --> A12([Phase 12: RL System]) --> A13([Phase 13: Frontend Boilerplate])
-  A13 --> A14([Phase 14: Post Gen UI]) --> A15([Phase 15: Analytics Dashboard]) --> A16([Phase 16: Deployment]) --> A17([Phase 17: Beta Testing])
+  A13 --> A14([Phase 14: Post Gen UI]) --> A15([Phase 15: Analytics Dashboard]) --> A16([Phase 16: Deployment]) --> A17([Phase 17: Beta Testing]) --> A18([Phase 18: Flutter Mobile App])
 ```
 
 ## Core Principle
@@ -1002,6 +1002,161 @@ Build in **layers of dependency**, not in time-based sprints. Each phase depends
 **✅ Exit Criteria:** Positive user feedback, core bugs fixed, ready for public launch
 
 **Dependency:** Phase 16 complete
+
+---
+
+### **PHASE 18: FLUTTER MOBILE APP**
+*Prerequisite: Phase 13 complete (Backend API ready). Goal: Native mobile experience for iOS & Android.*
+
+```
+├─ Step 1: Initialize Flutter project
+│  ├─ flutter create bigness_mobile
+│  ├─ Install dependencies:
+│  │  ├─ http (API calls)
+│  │  ├─ provider or riverpod (state management)
+│  │  ├─ shared_preferences (local storage)
+│  │  ├─ flutter_secure_storage (JWT tokens)
+│  │  ├─ cached_network_image (image caching)
+│  │  └─ charts_flutter (analytics)
+│  ├─ Configure Android & iOS
+│  └─ Test: App runs on emulator
+│
+├─ Step 2: Create folder structure
+│  ├─ lib/
+│  │  ├─ models/ (User, Brand, Post, Trend)
+│  │  ├─ services/ (API client, auth service)
+│  │  ├─ providers/ (state management)
+│  │  ├─ screens/ (Login, Dashboard, Settings, Analytics)
+│  │  ├─ widgets/ (reusable components)
+│  │  ├─ utils/ (constants, helpers)
+│  │  └─ main.dart
+│  └─ Test: Project structure clean
+│
+├─ Step 3: Create API client service
+│  ├─ File: services/api_service.dart
+│  ├─ Functions:
+│  │  ├─ login(email, password)
+│  │  ├─ register(email, password, role)
+│  │  ├─ getTrends()
+│  │  ├─ generatePost(brandId, trendId)
+│  │  ├─ publishPost(postId)
+│  │  └─ getAnalytics(brandId)
+│  ├─ Add JWT token interceptor
+│  └─ Test: API calls work from Flutter
+│
+├─ Step 4: Implement authentication flow
+│  ├─ Login Screen
+│  │  ├─ Email + Password input fields
+│  │  ├─ Login & Register buttons
+│  │  ├─ Form validation
+│  │  └─ Store JWT in secure storage
+│  │
+│  ├─ Auth Provider
+│  │  ├─ State: user, token, isLoggedIn
+│  │  ├─ Methods: login(), logout(), checkAuth()
+│  │  └─ Persist token across app restarts
+│  │
+│  └─ Test: Login/logout works, token persists
+│
+├─ Step 5: Build core screens
+│  ├─ Dashboard Screen
+│  │  ├─ Show selected brand info
+│  │  ├─ List trending topics (cards)
+│  │  ├─ "Generate Post" button for each trend
+│  │  ├─ Recent posts list
+│  │  └─ Bottom navigation
+│  │
+│  ├─ Post Generator Screen
+│  │  ├─ Display trend details
+│  │  ├─ Show loading spinner during generation
+│  │  ├─ Preview generated copy + image
+│  │  ├─ Edit copy inline
+│  │  ├─ Publish/Schedule buttons
+│  │  └─ Test: Post generation flow works
+│  │
+│  ├─ Analytics Screen
+│  │  ├─ Show engagement metrics
+│  │  ├─ Charts: engagement over time
+│  │  ├─ Best performing posts
+│  │  ├─ Platform breakdown (Twitter/LinkedIn)
+│  │  └─ Test: Data loads from API
+│  │
+│  └─ Settings Screen
+│     ├─ Edit brand profile
+│     ├─ Social account connections
+│     ├─ Notification preferences
+│     ├─ Logout button
+│     └─ Test: Updates persist
+│
+├─ Step 6: Add offline support
+│  ├─ Cache trends locally (SQLite or Hive)
+│  ├─ Cache generated posts
+│  ├─ Queue publish actions when offline
+│  ├─ Sync when back online
+│  └─ Test: App works without internet
+│
+├─ Step 7: Implement push notifications
+│  ├─ Install firebase_messaging
+│  ├─ Configure Firebase for Android & iOS
+│  ├─ Notification types:
+│  │  ├─ New trending topic detected
+│  │  ├─ Post published successfully
+│  │  ├─ High engagement alert
+│  │  └─ Weekly performance summary
+│  ├─ Handle notification taps
+│  └─ Test: Notifications received & opened
+│
+├─ Step 8: Polish UI/UX
+│  ├─ Add loading states everywhere
+│  ├─ Add error handling & retry logic
+│  ├─ Add pull-to-refresh
+│  ├─ Add empty states (no trends, no posts)
+│  ├─ Add animations (page transitions, cards)
+│  ├─ Implement dark mode (optional)
+│  └─ Test: UI feels smooth & responsive
+│
+├─ Step 9: Platform-specific features
+│  ├─ iOS:
+│  │  ├─ Configure App Store metadata
+│  │  ├─ Add app icons & splash screen
+│  │  ├─ Test on iPhone & iPad
+│  │  └─ Handle iOS permissions (notifications, camera)
+│  │
+│  ├─ Android:
+│  │  ├─ Configure Play Store metadata
+│  │  ├─ Add app icons & splash screen
+│  │  ├─ Test on different screen sizes
+│  │  └─ Handle Android permissions
+│  │
+│  └─ Test: Both platforms work correctly
+│
+├─ Step 10: Build & deploy
+│  ├─ iOS:
+│  │  ├─ flutter build ios --release
+│  │  ├─ Archive in Xcode
+│  │  ├─ Upload to TestFlight
+│  │  └─ Submit to App Store (pending review)
+│  │
+│  ├─ Android:
+│  │  ├─ flutter build appbundle --release
+│  │  ├─ Upload to Play Console
+│  │  ├─ Create internal testing track
+│  │  └─ Submit to Play Store (pending review)
+│  │
+│  └─ Test: Apps downloadable from stores
+│
+└─ Step 11: Mobile-specific testing
+   ├─ Test on real devices (not just emulators)
+   ├─ Test different screen sizes & orientations
+   ├─ Test network conditions (slow, offline, switching)
+   ├─ Test battery usage & performance
+   ├─ Test memory leaks
+   └─ Gather beta tester feedback
+```
+
+**✅ Exit Criteria:** Mobile app on App Store & Play Store, feature parity with web, smooth UX
+
+**Dependency:** Phase 13 complete (Backend API must be ready)
 
 ---
 
