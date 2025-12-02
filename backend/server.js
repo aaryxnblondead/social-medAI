@@ -26,6 +26,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Auth routes
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+console.log('✅ Auth routes mounted (/api/auth)');
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -75,6 +80,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`�� Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log('Registered top-level paths:', app._router.stack.filter(r => r.route).map(r => r.route.path));
   console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 

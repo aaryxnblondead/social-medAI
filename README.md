@@ -20,8 +20,7 @@ graph LR
 ```
 
 ## Core Principle
-Build in **layers
- of dependency**, not in time-based sprints. Each phase depends on successful completion of previous phases. This ensures you never build on unstable foundations.
+Build in **layers of dependency**, not in time-based sprints. Each phase depends on successful completion of previous phases. This ensures you never build on unstable foundations.
 
 ---
 
