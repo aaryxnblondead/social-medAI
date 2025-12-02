@@ -1,4 +1,198 @@
 # Bigness App: Complete Flowchart Documentation
+## 21. META & GOOGLE ADS INTEGRATION FLOW
+
+```mermaid
+graph TB
+    subgraph User["👤 User Dashboard"]
+        A1["Login<br/>Register"]
+        A2["Create Brand Profile"]
+        A3["View Trends"]
+    end
+
+    subgraph Content["📝 Content Generation"]
+        B1["Fetch Trends<br/>Twitter + NewsAPI"]
+        B2["Generate Copy<br/>Groq LLM"]
+        B3["Generate Image<br/>Stability AI"]
+        B4["Create Post Draft<br/>Store in DB"]
+    end
+
+    subgraph Publishing["🚀 Publishing & Ads"]
+        C1["Publish to Twitter<br/>Post to Timeline"]
+        C2["Track Engagement<br/>Metrics from Twitter"]
+        subgraph AdsAutomation["🎯 Ads Automation Engine"]
+            C3a["Analyze Post<br/>Performance"]
+            C3b["Create Ads<br/>Campaign Brief"]
+            C3c["Select Ad Platform<br/>Meta or Google"]
+        end
+        C4a["Meta Ads Flow"]
+        C4b["Google Ads Flow"]
+    end
+
+    subgraph MetaAds["📱 Meta Ads Management"]
+        D1["Connect Facebook<br/>Business Account"]
+        D2["Create Ad Campaign<br/>with Post Content"]
+        D3["Set Targeting<br/>Age, Location, Interests"]
+        D4["Set Budget &<br/>Schedule"]
+        D5["Create Ads<br/>in Meta Platform"]
+        D6["Monitor Performance<br/>Impressions, Clicks, ROI"]
+    end
+
+    subgraph GoogleAds["🔍 Google Ads Management"]
+        E1["Connect Google<br/>Ads Account"]
+        E2["Create Campaign<br/>Search/Display/Shopping"]
+        E3["Extract Keywords<br/>from Post Content"]
+        E4["Set Targeting &<br/>Budget"]
+        E5["Create Ads<br/>in Google Platform"]
+        E6["Monitor Performance<br/>Impressions, Clicks, Cost"]
+    end
+
+    subgraph Analytics["📊 Analytics Dashboard"]
+        F1["Aggregate Metrics<br/>All Platforms"]
+        F2["Calculate ROI<br/>Per Post + Ad"]
+        F3["Show Performance<br/>Comparison"]
+        F4["Recommend Optimization<br/>RL Algorithm"]
+    end
+
+    subgraph RL["🤖 Reinforcement Learning"]
+        G1["Analyze Best Performing<br/>Post Formats"]
+        G2["Learn Platform<br/>Preferences"]
+        G3["Optimize Next<br/>Generation"]
+        G4["Update Brand Profile<br/>Recommendations"]
+    end
+
+    %% User Flow
+    A1 --> A2
+    A2 --> A3
+    A3 --> B1
+
+    %% Content Generation Flow
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+
+    %% Publishing Flow
+    B4 --> C1
+    C1 --> C2
+    C2 --> C3a
+    C3a --> C3b
+    C3b --> C3c
+
+    %% Split to Meta or Google
+    C3c -->|Meta Selected| C4a
+    C3c -->|Google Selected| C4b
+    C3c -->|Both| C4a
+    C3c -->|Both| C4b
+
+    %% Meta Ads Flow
+    C4a --> D1
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+    D4 --> D5
+    D5 --> D6
+
+    %% Google Ads Flow
+    C4b --> E1
+    E1 --> E2
+    E2 --> E3
+    E3 --> E4
+    E4 --> E5
+    E5 --> E6
+
+    %% Analytics
+    D6 --> F1
+    E6 --> F1
+    F1 --> F2
+    F2 --> F3
+    F3 --> F4
+
+    %% RL Loop
+    F4 --> G1
+    G1 --> G2
+    G2 --> G3
+    G3 --> G4
+    G4 -.->|Loop Back| A3
+
+    %% Styling
+    classDef userStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef contentStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef publishStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef metaStyle fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef googleStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef analyticsStyle fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+    classDef rlStyle fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef adsAutoStyle fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+
+    class A1,A2,A3 userStyle
+    class B1,B2,B3,B4 contentStyle
+    class C1,C2 publishStyle
+    class C3a,C3b,C3c adsAutoStyle
+    class D1,D2,D3,D4,D5,D6 metaStyle
+    class E1,E2,E3,E4,E5,E6 googleStyle
+    class F1,F2,F3,F4 analyticsStyle
+    class G1,G2,G3,G4 rlStyle
+```
+
+### 📋 Flow Explanation
+**Phase 1: User & Content**
+User logs in → Creates brand profile → Fetches trends
+
+Entry point for everything
+
+**Phase 2: Content Generation**
+Trends fetched from Twitter + NewsAPI
+
+Copy generated with Groq LLM
+
+Images generated with Stability AI
+
+Post saved as draft
+
+**Phase 3: Publishing & Decision**
+Post published to Twitter immediately
+
+Metrics tracked from Twitter API
+
+Smart Ad Automation decides: Should this post become an ad?
+
+Platform selection: Meta, Google, or both?
+
+**Phase 4A: Meta Ads (Facebook/Instagram)**
+Connect Account → Create Campaign → Set Targeting → Set Budget → Create Ads → Monitor
+Reuses post content (headline + image)
+
+Targets by: Age, Location, Interests, Demographics
+
+Tracks: Impressions, Clicks, Conversions, Spend
+
+**Phase 4B: Google Ads (Search/Display)**
+Connect Account → Create Campaign → Extract Keywords → Set Targeting → Create Ads → Monitor
+Extracts keywords from post content
+
+Creates search ads and/or display ads
+
+Targets by: Keywords, Location, Demographics, Interests
+
+Tracks: Impressions, Clicks, Cost-per-Click, Conversions
+
+**Phase 5: Analytics & Optimization**
+Aggregates metrics from all 3 platforms (Twitter + Meta + Google)
+
+Calculates ROI per post + ad combination
+
+Shows performance comparison
+
+Recommends optimizations
+
+**Phase 6: Reinforcement Learning Loop**
+Analyzes best performing formats
+
+Learns platform preferences
+
+Updates recommendations
+
+Loop back: Next posts get better automatically
+
 
 ## 1. BRAND USER JOURNEY
 
