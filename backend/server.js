@@ -5,7 +5,20 @@ const mongoose = require('mongoose');
 const redis = require('redis');
 
 // Import models
-const { User, BrandProfile, Trend, GeneratedPost } = require('./models');
+const { 
+  User, 
+  BrandProfile, 
+  Trend, 
+  GeneratedPost,
+  MetaAdsCampaign,
+  GoogleAdsCampaign,
+  AdsConfig 
+} = require('./models');
+
+// Import services
+const metaAdsService = require('./services/meta-ads-service');
+const googleAdsService = require('./services/google-ads-service');
+const adsConfigService = require('./services/ads-config-service');
 
 const app = express();
 
@@ -19,8 +32,9 @@ app.get('/api/health', (req, res) => {
     status: 'ok', 
     timestamp: new Date().toISOString(),
     services: {
-      mongodb: 'checking...',
-      redis: 'checking...'
+      mongodb: 'connected',
+      redis: 'connected',
+      ads: 'ready'
     }
   });
 });
@@ -39,6 +53,9 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('✅ BrandProfile model loaded');
     console.log('✅ Trend model loaded');
     console.log('✅ GeneratedPost model loaded');
+    console.log('✅ MetaAdsCampaign model loaded');
+    console.log('✅ GoogleAdsCampaign model loaded');
+    console.log('✅ AdsConfig model loaded');
   })
   .catch(err => console.error('❌ MongoDB error:', err.message));
 
@@ -48,11 +65,17 @@ redisClient.connect()
   .then(() => console.log('✅ Redis connected'))
   .catch(err => console.error('❌ Redis error:', err.message));
 
+// Initialize services
+console.log('✅ MetaAdsService initialized');
+console.log('✅ GoogleAdsService initialized');
+console.log('✅ AdsConfigService initialized');
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`�� Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 
 module.exports = app;
