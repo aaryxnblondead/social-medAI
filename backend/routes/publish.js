@@ -1,33 +1,80 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
+const Joi = require('joi');
+const twitterService = require('../services/twitter-service');
+const { GeneratedPost } = require('../models');
+
+const twitterPublishSchema = Joi.object({
+  postId: Joi.string().required(),
+  text: Joi.string().min(1).max(280).required(),
+  mediaUrl: Joi.string().uri().optional()
+});
 
 // Publish to Twitter
 router.post('/twitter', verifyToken, async (req, res) => {
-  res.json({ message: 'Published to Twitter', data: req.body });
+  try {
+    const { value, error } = twitterPublishSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+    const result = await twitterService.publishTweet({
+      text: value.text,
+      mediaUrl: value.mediaUrl,
+      userId: req.userId
+    });
+    // mark post published if exists
+    await GeneratedPost.findOneAndUpdate(
+      { _id: value.postId, userId: req.userId },
+      { status: 'published', publishedAt: new Date(), platforms: { twitter: { tweetId: result.tweetId } } }
+    );
+    res.json({ message: 'Published to Twitter', tweetId: result.tweetId });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Get Twitter metrics for a tweet
 router.get('/twitter/metrics/:tweetId', verifyToken, async (req, res) => {
-  const { tweetId } = req.params;
-  res.json({ tweetId, metrics: { impressions: 0, likes: 0, retweets: 0 } });
+  try {
+    const { tweetId } = req.params;
+    const metrics = await twitterService.getTweetMetrics(tweetId);
+    res.json({ tweetId, metrics });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Delete a tweet
 router.delete('/twitter/:tweetId', verifyToken, async (req, res) => {
-  const { tweetId } = req.params;
-  res.json({ message: 'Tweet deleted', tweetId });
+  try {
+    const { tweetId } = req.params;
+    await twitterService.deleteTweet(tweetId);
+    res.json({ message: 'Tweet deleted', tweetId });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Sync metrics for a tweet
 router.post('/twitter/:tweetId/sync-metrics', verifyToken, async (req, res) => {
-  const { tweetId } = req.params;
-  res.json({ message: 'Metrics synced', tweetId });
+  try {
+    const { tweetId } = req.params;
+    const metrics = await twitterService.getTweetMetrics(tweetId);
+    // Optionally update a post's twitter metrics
+    await GeneratedPost.updateMany({ userId: req.userId, 'platforms.twitter.tweetId': tweetId }, { $set: { 'platforms.twitter.metrics': metrics } });
+    res.json({ message: 'Metrics synced', tweetId, metrics });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Publish all scheduled posts
 router.post('/publish-scheduled', verifyToken, async (req, res) => {
-  res.json({ message: 'All scheduled posts published' });
+  try {
+    const scheduled = await GeneratedPost.find({ userId: req.userId, status: 'scheduled', scheduledAt: { $lte: new Date() } });
+    res.json({ message: 'Publish job queued', count: scheduled.length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;

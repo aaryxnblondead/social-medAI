@@ -1,29 +1,78 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
+const Joi = require('joi');
+const orchestrator = require('../services/publish-orchestrator');
+const { GeneratedPost } = require('../models');
+
+const singleSchema = Joi.object({
+  postId: Joi.string().required(),
+  payload: Joi.object().required()
+});
+const multiSchema = Joi.object({
+  postId: Joi.string().required(),
+  platforms: Joi.array().items(Joi.string()).min(1).required(),
+  payload: Joi.object().required()
+});
 
 // Publish to a single specified platform
 router.post('/platform/:platform', verifyToken, async (req, res) => {
-  const { platform } = req.params;
-  res.json({ message: `Published to ${platform}`, payload: req.body });
+  try {
+    const { value, error } = singleSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+    const { platform } = req.params;
+    const result = await orchestrator.publishToPlatform(platform, value.payload, req.userId);
+    await GeneratedPost.findOneAndUpdate(
+      { _id: value.postId, userId: req.userId },
+      { status: 'published', publishedAt: new Date(), [`platforms.${platform}`]: { externalId: result.id } }
+    );
+    res.json({ platform, result });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Publish to multiple platforms
 router.post('/multi', verifyToken, async (req, res) => {
-  const { platforms = [] } = req.body;
-  res.json({ message: 'Published to multiple platforms', platforms });
+  try {
+    const { value, error } = multiSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+    const results = await orchestrator.publishToMultiple(value.platforms, value.payload, req.userId);
+    await GeneratedPost.findOneAndUpdate(
+      { _id: value.postId, userId: req.userId },
+      { status: 'published', publishedAt: new Date(), platforms: results.reduce((acc, r) => ({ ...acc, [r.platform]: { externalId: r.id } }), {}) }
+    );
+    res.json({ results });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Sync metrics for all platforms for a post
 router.post('/sync-metrics/:postId', verifyToken, async (req, res) => {
-  const { postId } = req.params;
-  res.json({ postId, synced: true });
+  try {
+    const { postId } = req.params;
+    const metrics = await orchestrator.syncAllMetrics(postId, req.userId);
+    await GeneratedPost.findOneAndUpdate(
+      { _id: postId, userId: req.userId },
+      { $set: { crossPlatformMetrics: metrics } }
+    );
+    res.json({ postId, metrics });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Get cross-platform performance
 router.get('/:postId/performance', verifyToken, async (req, res) => {
-  const { postId } = req.params;
-  res.json({ postId, performance: { twitter: {}, instagram: {}, linkedin: {}, facebook: {} } });
+  try {
+    const { postId } = req.params;
+    const doc = await GeneratedPost.findOne({ _id: postId, userId: req.userId });
+    if (!doc) return res.status(404).json({ error: 'Post not found' });
+    res.json({ postId, performance: doc.crossPlatformMetrics || {} });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;

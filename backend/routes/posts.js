@@ -1,43 +1,115 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/auth');
+const Joi = require('joi');
+const { GeneratedPost } = require('../models');
+
+const scheduleSchema = Joi.object({
+  title: Joi.string().min(3).required(),
+  content: Joi.string().min(10).required(),
+  imageUrl: Joi.string().uri().optional(),
+  platformTargets: Joi.array().items(Joi.string()).default([]),
+  scheduledAt: Joi.date().required()
+});
 
 // Schedule a post
 router.post('/schedule', verifyToken, async (req, res) => {
-  res.json({ message: 'Post scheduled', data: { ...req.body, userId: req.userId } });
+  try {
+    const { value, error } = scheduleSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+    const doc = await GeneratedPost.create({
+      userId: req.userId,
+      title: value.title,
+      content: value.content,
+      imageUrl: value.imageUrl,
+      platformTargets: value.platformTargets,
+      status: 'scheduled',
+      scheduledAt: value.scheduledAt
+    });
+    res.json({ message: 'Post scheduled', post: doc });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Get scheduled posts
 router.get('/scheduled', verifyToken, async (req, res) => {
-  res.json({ scheduled: [] });
+  try {
+    const rows = await GeneratedPost.find({ userId: req.userId, status: 'scheduled' }).sort({ scheduledAt: 1 });
+    res.json({ scheduled: rows });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Get drafts
 router.get('/drafts', verifyToken, async (req, res) => {
-  res.json({ drafts: [] });
+  try {
+    const rows = await GeneratedPost.find({ userId: req.userId, status: 'draft' });
+    res.json({ drafts: rows });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Get published posts
 router.get('/published', verifyToken, async (req, res) => {
-  res.json({ published: [] });
+  try {
+    const rows = await GeneratedPost.find({ userId: req.userId, status: 'published' }).sort({ publishedAt: -1 });
+    res.json({ published: rows });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Publish a specific post
 router.post('/:postId/publish', verifyToken, async (req, res) => {
-  const { postId } = req.params;
-  res.json({ message: 'Post published', postId });
+  try {
+    const { postId } = req.params;
+    const doc = await GeneratedPost.findOneAndUpdate(
+      { _id: postId, userId: req.userId },
+      { status: 'published', publishedAt: new Date() },
+      { new: true }
+    );
+    if (!doc) return res.status(404).json({ error: 'Post not found' });
+    res.json({ message: 'Post published', post: doc });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Update post metrics
+const metricsSchema = Joi.object({ impressions: Joi.number().min(0), clicks: Joi.number().min(0), likes: Joi.number().min(0), shares: Joi.number().min(0) }).min(1);
 router.put('/:postId/metrics', verifyToken, async (req, res) => {
-  const { postId } = req.params;
-  res.json({ message: 'Metrics updated', postId, metrics: req.body });
+  try {
+    const { value, error } = metricsSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.message });
+    const { postId } = req.params;
+    const doc = await GeneratedPost.findOneAndUpdate(
+      { _id: postId, userId: req.userId },
+      { $set: { metrics: value } },
+      { new: true }
+    );
+    if (!doc) return res.status(404).json({ error: 'Post not found' });
+    res.json({ message: 'Metrics updated', post: doc });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Get analytics for a post
 router.get('/:postId/analytics', verifyToken, async (req, res) => {
-  const { postId } = req.params;
-  res.json({ postId, analytics: { impressions: 0, clicks: 0, ctr: 0 } });
+  try {
+    const { postId } = req.params;
+    const doc = await GeneratedPost.findOne({ _id: postId, userId: req.userId });
+    if (!doc) return res.status(404).json({ error: 'Post not found' });
+    const impressions = doc.metrics?.impressions || 0;
+    const clicks = doc.metrics?.clicks || 0;
+    const ctr = impressions ? Number(((clicks / impressions) * 100).toFixed(2)) : 0;
+    res.json({ postId, analytics: { impressions, clicks, ctr } });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;
