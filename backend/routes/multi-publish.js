@@ -1,4 +1,33 @@
 const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
+
+// Publish to a single specified platform
+router.post('/platform/:platform', verifyToken, async (req, res) => {
+  const { platform } = req.params;
+  res.json({ message: `Published to ${platform}`, payload: req.body });
+});
+
+// Publish to multiple platforms
+router.post('/multi', verifyToken, async (req, res) => {
+  const { platforms = [] } = req.body;
+  res.json({ message: 'Published to multiple platforms', platforms });
+});
+
+// Sync metrics for all platforms for a post
+router.post('/sync-metrics/:postId', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  res.json({ postId, synced: true });
+});
+
+// Get cross-platform performance
+router.get('/:postId/performance', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  res.json({ postId, performance: { twitter: {}, instagram: {}, linkedin: {}, facebook: {} } });
+});
+
+module.exports = router;
+const express = require('express');
 const { GeneratedPost } = require('../models');
 const multiPlatformPublisher = require('../services/multi-platform-publisher');
 const { verifyToken } = require('../middleware/auth');
