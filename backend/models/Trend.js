@@ -8,7 +8,7 @@ const trendSchema = new mongoose.Schema({
   description: String,
   source: {
     type: String,
-    enum: ['twitter', 'news', 'reddit', 'trends'],
+    enum: ['twitter', 'news', 'newsapi', 'reddit', 'trends'],
     required: true
   },
   category: {

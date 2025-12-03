@@ -19,6 +19,15 @@ const {
 const metaAdsService = require('./services/meta-ads-service');
 const googleAdsService = require('./services/google-ads-service');
 const adsConfigService = require('./services/ads-config-service');
+const trendDetector = require('./services/trend-detector');
+
+// Import routes
+const authRoutes = require('./routes/auth');
+const brandRoutes = require('./routes/brands');
+const trendRoutes = require('./routes/trends');
+
+// Import middleware
+const { verifyToken } = require('./middleware/auth');
 
 const app = express();
 
@@ -26,12 +35,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Auth routes
-const authRoutes = require('./routes/auth');
-app.use('/api/auth', authRoutes);
-console.log('✅ Auth routes mounted (/api/auth)');
-
-// Health check endpoint
+// Health check endpoint (public)
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -39,8 +43,27 @@ app.get('/api/health', (req, res) => {
     services: {
       mongodb: 'connected',
       redis: 'connected',
-      ads: 'ready'
+      ads: 'ready',
+      trends: 'ready'
     }
+  });
+});
+
+// Auth routes (public)
+app.use('/api/auth', authRoutes);
+
+// Brand routes (protected)
+app.use('/api/brands', brandRoutes);
+
+// Trend routes (mostly public)
+app.use('/api/trends', trendRoutes);
+
+// Protected routes example
+app.get('/api/protected', verifyToken, (req, res) => {
+  res.json({
+    message: 'This is a protected endpoint',
+    userId: req.userId,
+    user: req.user
   });
 });
 
@@ -74,13 +97,46 @@ redisClient.connect()
 console.log('✅ MetaAdsService initialized');
 console.log('✅ GoogleAdsService initialized');
 console.log('✅ AdsConfigService initialized');
+console.log('✅ TrendDetectorService initialized');
+
+// Mount routes
+console.log('✅ Auth routes mounted (/api/auth)');
+console.log('✅ Brand routes mounted (/api/brands)');
+console.log('✅ Trend routes mounted (/api/trends)');
+
+// Start automatic trend detection every 30 minutes
+setInterval(async () => {
+  console.log('⏰ Running scheduled trend detection...');
+  await trendDetector.detectAndSaveTrends();
+}, 30 * 60 * 1000);
+
+// Optional: Run on startup
+setTimeout(async () => {
+  console.log('⏰ Running initial trend detection...');
+  await trendDetector.detectAndSaveTrends();
+}, 2000);
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`�� Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log('Registered top-level paths:', app._router.stack.filter(r => r.route).map(r => r.route.path));
+  console.log(`\n🔐 Authentication Endpoints:`);
+  console.log(`   POST   /api/auth/register`);
+  console.log(`   POST   /api/auth/login`);
+  console.log(`   GET    /api/auth/me (protected)`);
+  console.log(`   POST   /api/auth/logout (protected)`);
+  console.log(`\n📱 Brand Profile Endpoints (all protected):`);
+  console.log(`   POST   /api/brands - Create brand`);
+  console.log(`   GET    /api/brands - List all brands`);
+  console.log(`   GET    /api/brands/:id - Get single brand`);
+  console.log(`   PUT    /api/brands/:id - Update brand`);
+  console.log(`   DELETE /api/brands/:id - Delete brand`);
+  console.log(`\n📰 Trend Detection Endpoints (mostly public):`);
+  console.log(`   GET    /api/trends - Get all trending topics`);
+  console.log(`   GET    /api/trends/source/:source - Get trends by source`);
+  console.log(`   GET    /api/trends/search/:query - Search trends`);
+  console.log(`   POST   /api/trends/refresh - Manually refresh trends (protected)`);
   console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 
