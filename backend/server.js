@@ -29,6 +29,7 @@ const copyRoutes = require('./routes/copy');
 const imageRoutes = require('./routes/images');
 const postRoutes = require('./routes/posts');
 const publishRoutes = require('./routes/publish');
+const multiPublishRoutes = require('./routes/multi-publish');
 
 // Import middleware
 const { verifyToken } = require('./middleware/auth');
@@ -72,6 +73,8 @@ app.use('/api/images', imageRoutes);
 app.use('/api/posts', postRoutes);
 // Publishing routes (protected)
 app.use('/api/publish', publishRoutes);
+// Multi-platform publishing routes (protected)
+app.use('/api/publish/multi', multiPublishRoutes);
 
 // Protected routes example
 app.get('/api/protected', verifyToken, (req, res) => {
@@ -122,6 +125,7 @@ console.log('✅ Copy routes mounted (/api/copy)');
 console.log('✅ Image routes mounted (/api/images)');
 console.log('✅ Post routes mounted (/api/posts)');
 console.log('✅ Publish routes mounted (/api/publish)');
+console.log('✅ Multi-platform routes mounted (/api/publish/multi)');
 
 
 // Start automatic trend detection every 30 minutes
@@ -182,6 +186,11 @@ app.listen(PORT, () => {
   console.log(`   DELETE /api/publish/twitter/:tweetId - Delete tweet`);
   console.log(`   POST   /api/publish/twitter/:tweetId/sync-metrics - Sync metrics`);
   console.log(`   POST   /api/publish/publish-scheduled - Publish all scheduled`);
+  console.log(`\n🌐 Multi-Platform Publishing (all protected):`);
+  console.log(`   POST   /api/publish/multi/platform/:platform - Publish to single platform`);
+  console.log(`   POST   /api/publish/multi/multi - Publish to multiple platforms`);
+  console.log(`   POST   /api/publish/multi/sync-metrics/:postId - Sync all platform metrics`);
+  console.log(`   GET    /api/publish/multi/:postId/performance - Get cross-platform performance`);
   console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 

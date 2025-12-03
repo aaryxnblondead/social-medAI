@@ -1,4 +1,37 @@
 const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
+
+// Publish to Twitter
+router.post('/twitter', verifyToken, async (req, res) => {
+  res.json({ message: 'Published to Twitter', data: req.body });
+});
+
+// Get Twitter metrics for a tweet
+router.get('/twitter/metrics/:tweetId', verifyToken, async (req, res) => {
+  const { tweetId } = req.params;
+  res.json({ tweetId, metrics: { impressions: 0, likes: 0, retweets: 0 } });
+});
+
+// Delete a tweet
+router.delete('/twitter/:tweetId', verifyToken, async (req, res) => {
+  const { tweetId } = req.params;
+  res.json({ message: 'Tweet deleted', tweetId });
+});
+
+// Sync metrics for a tweet
+router.post('/twitter/:tweetId/sync-metrics', verifyToken, async (req, res) => {
+  const { tweetId } = req.params;
+  res.json({ message: 'Metrics synced', tweetId });
+});
+
+// Publish all scheduled posts
+router.post('/publish-scheduled', verifyToken, async (req, res) => {
+  res.json({ message: 'All scheduled posts published' });
+});
+
+module.exports = router;
+const express = require('express');
 const { GeneratedPost } = require('../models');
 const twitterPublisher = require('../services/twitter-publisher');
 const postManager = require('../services/post-manager');

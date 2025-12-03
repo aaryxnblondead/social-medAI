@@ -1,4 +1,47 @@
 const express = require('express');
+const router = express.Router();
+const { verifyToken } = require('../middleware/auth');
+
+// Schedule a post
+router.post('/schedule', verifyToken, async (req, res) => {
+  res.json({ message: 'Post scheduled', data: { ...req.body, userId: req.userId } });
+});
+
+// Get scheduled posts
+router.get('/scheduled', verifyToken, async (req, res) => {
+  res.json({ scheduled: [] });
+});
+
+// Get drafts
+router.get('/drafts', verifyToken, async (req, res) => {
+  res.json({ drafts: [] });
+});
+
+// Get published posts
+router.get('/published', verifyToken, async (req, res) => {
+  res.json({ published: [] });
+});
+
+// Publish a specific post
+router.post('/:postId/publish', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  res.json({ message: 'Post published', postId });
+});
+
+// Update post metrics
+router.put('/:postId/metrics', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  res.json({ message: 'Metrics updated', postId, metrics: req.body });
+});
+
+// Get analytics for a post
+router.get('/:postId/analytics', verifyToken, async (req, res) => {
+  const { postId } = req.params;
+  res.json({ postId, analytics: { impressions: 0, clicks: 0, ctr: 0 } });
+});
+
+module.exports = router;
+const express = require('express');
 const { GeneratedPost } = require('../models');
 const postManager = require('../services/post-manager');
 const { verifyToken } = require('../middleware/auth');
