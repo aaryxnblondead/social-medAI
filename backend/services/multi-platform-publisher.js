@@ -41,13 +41,6 @@ class MultiPlatformPublisherService {
       );
 
       return result;
-      } else if (platform === 'linkedin') {
-        return await this.publishToLinkedIn(post);
-      } else if (platform === 'facebook') {
-        return await this.publishToFacebook(post);
-      } else if (platform === 'instagram') {
-        return await this.publishToInstagram(post);
-      }
     } catch (error) {
       console.error(`❌ ${platform} publish error:`, error.message);
       throw error;
