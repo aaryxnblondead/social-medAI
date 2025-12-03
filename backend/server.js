@@ -27,6 +27,7 @@ const brandRoutes = require('./routes/brands');
 const trendRoutes = require('./routes/trends');
 const copyRoutes = require('./routes/copy');
 const imageRoutes = require('./routes/images');
+const postRoutes = require('./routes/posts');
 
 // Import middleware
 const { verifyToken } = require('./middleware/auth');
@@ -65,6 +66,9 @@ app.use('/api/copy', copyRoutes);
 
 // Image generation routes (protected)
 app.use('/api/images', imageRoutes);
+
+// Post management routes (protected)
+app.use('/api/posts', postRoutes);
 
 // Protected routes example
 app.get('/api/protected', verifyToken, (req, res) => {
@@ -113,6 +117,7 @@ console.log('✅ Brand routes mounted (/api/brands)');
 console.log('✅ Trend routes mounted (/api/trends)');
 console.log('✅ Copy routes mounted (/api/copy)');
 console.log('✅ Image routes mounted (/api/images)');
+console.log('✅ Post routes mounted (/api/posts)');
 
 
 // Start automatic trend detection every 30 minutes
@@ -159,6 +164,14 @@ app.listen(PORT, () => {
   console.log(`   POST   /api/images/generate - Generate image for post`);
   console.log(`   POST   /api/images/generate-batch - Batch generate images`);
   console.log(`   DELETE /api/images/delete/:publicId - Delete image`);
+  console.log(`\n📅 Post Management Endpoints (all protected):`);
+  console.log(`   POST   /api/posts/schedule - Schedule post`);
+  console.log(`   GET    /api/posts/scheduled - Get scheduled posts`);
+  console.log(`   GET    /api/posts/drafts - Get drafts`);
+  console.log(`   GET    /api/posts/published - Get published posts`);
+  console.log(`   POST   /api/posts/:postId/publish - Publish post`);
+  console.log(`   PUT    /api/posts/:postId/metrics - Update metrics`);
+  console.log(`   GET    /api/posts/:postId/analytics - Get analytics`);
   console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 
