@@ -28,6 +28,7 @@ const trendRoutes = require('./routes/trends');
 const copyRoutes = require('./routes/copy');
 const imageRoutes = require('./routes/images');
 const postRoutes = require('./routes/posts');
+const publishRoutes = require('./routes/publish');
 
 // Import middleware
 const { verifyToken } = require('./middleware/auth');
@@ -69,6 +70,8 @@ app.use('/api/images', imageRoutes);
 
 // Post management routes (protected)
 app.use('/api/posts', postRoutes);
+// Publishing routes (protected)
+app.use('/api/publish', publishRoutes);
 
 // Protected routes example
 app.get('/api/protected', verifyToken, (req, res) => {
@@ -118,6 +121,7 @@ console.log('✅ Trend routes mounted (/api/trends)');
 console.log('✅ Copy routes mounted (/api/copy)');
 console.log('✅ Image routes mounted (/api/images)');
 console.log('✅ Post routes mounted (/api/posts)');
+console.log('✅ Publish routes mounted (/api/publish)');
 
 
 // Start automatic trend detection every 30 minutes
@@ -172,6 +176,12 @@ app.listen(PORT, () => {
   console.log(`   POST   /api/posts/:postId/publish - Publish post`);
   console.log(`   PUT    /api/posts/:postId/metrics - Update metrics`);
   console.log(`   GET    /api/posts/:postId/analytics - Get analytics`);
+  console.log(`\n🐦 Social Media Publishing (all protected):`);
+  console.log(`   POST   /api/publish/twitter - Publish to Twitter`);
+  console.log(`   GET    /api/publish/twitter/metrics/:tweetId - Get metrics`);
+  console.log(`   DELETE /api/publish/twitter/:tweetId - Delete tweet`);
+  console.log(`   POST   /api/publish/twitter/:tweetId/sync-metrics - Sync metrics`);
+  console.log(`   POST   /api/publish/publish-scheduled - Publish all scheduled`);
   console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 
