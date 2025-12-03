@@ -130,7 +130,7 @@ router.post('/variations', verifyToken, async (req, res) => {
   }
 });
 
-// Get generated posts for user (protected)
+// Get posts (support both single platform and multi-platform)
  router.get('/posts', cacheMiddleware('copy:posts', CACHE_TTL.POST), verifyToken, async (req, res) => {
   try {
     const { status, platform } = req.query;
@@ -138,7 +138,14 @@ router.post('/variations', verifyToken, async (req, res) => {
     let query = { userId: req.userId };
 
     if (status) query.status = status;
-    if (platform) query.platform = platform;
+
+    // For platform filtering, check both legacy and new multi-platform structure
+    if (platform) {
+      query.$or = [
+        { platform: platform },  // Legacy single platform
+        { 'platforms.name': platform }  // New multi-platform
+      ];
+    }
 
     const posts = await GeneratedPost.find(query)
       .populate('brandProfileId', 'brandName')

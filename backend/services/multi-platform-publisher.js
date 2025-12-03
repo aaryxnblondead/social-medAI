@@ -1,14 +1,16 @@
 const twitterPublisher = require('./twitter-publisher');
+const linkedinPublisher = require('./linkedin-publisher');
+const facebookPublisher = require('./facebook-publisher');
+const instagramPublisher = require('./instagram-publisher');
 const RetryService = require('./retry-service');
 
 class MultiPlatformPublisherService {
   constructor() {
     this.publishers = {
       twitter: twitterPublisher,
-      // LinkedIn, Facebook, Instagram will be added as separate services
-      linkedin: null,
-      facebook: null,
-      instagram: null
+      linkedin: linkedinPublisher,
+      facebook: facebookPublisher,
+      instagram: instagramPublisher
     };
   }
 
@@ -73,16 +75,14 @@ class MultiPlatformPublisherService {
     }
   }
 
-  // Publish to LinkedIn (placeholder for future implementation)
+  // Publish to LinkedIn
   async publishToLinkedIn(post) {
     try {
-      console.log('LinkedIn publishing coming soon...');
-      // Requires LinkedIn API integration
-      // For now, return mock response
+      const result = await linkedinPublisher.postToLinkedIn(post.copy, post.imageUrl);
       return {
         platform: 'linkedin',
-        postId: `linkedin_${Date.now()}`,
-        url: `https://linkedin.com/posts/${Date.now()}`,
+        postId: result.postId,
+        url: result.url,
         status: 'published'
       };
     } catch (error) {
@@ -90,15 +90,14 @@ class MultiPlatformPublisherService {
     }
   }
 
-  // Publish to Facebook (placeholder for future implementation)
+  // Publish to Facebook
   async publishToFacebook(post) {
     try {
-      console.log('Facebook publishing coming soon...');
-      // Requires Facebook Graph API integration
+      const result = await facebookPublisher.postToFacebook(post.copy, post.imageUrl);
       return {
         platform: 'facebook',
-        postId: `facebook_${Date.now()}`,
-        url: `https://facebook.com/posts/${Date.now()}`,
+        postId: result.postId,
+        url: result.url,
         status: 'published'
       };
     } catch (error) {
@@ -106,15 +105,14 @@ class MultiPlatformPublisherService {
     }
   }
 
-  // Publish to Instagram (placeholder for future implementation)
+  // Publish to Instagram
   async publishToInstagram(post) {
     try {
-      console.log('Instagram publishing coming soon...');
-      // Requires Instagram API integration
+      const result = await instagramPublisher.postToInstagram(post.copy, post.imageUrl);
       return {
         platform: 'instagram',
-        postId: `instagram_${Date.now()}`,
-        url: `https://instagram.com/p/${Date.now()}`,
+        postId: result.postId,
+        url: result.url,
         status: 'published'
       };
     } catch (error) {
@@ -181,14 +179,11 @@ class MultiPlatformPublisherService {
       if (platform === 'twitter') {
         return await twitterPublisher.getTweetMetrics(postId);
       } else if (platform === 'linkedin') {
-        console.log('LinkedIn metrics coming soon...');
-        return { platform: 'linkedin', postId, error: 'Not implemented' };
+        return await linkedinPublisher.getPostMetrics(postId);
       } else if (platform === 'facebook') {
-        console.log('Facebook metrics coming soon...');
-        return { platform: 'facebook', postId, error: 'Not implemented' };
+        return await facebookPublisher.getPostMetrics(postId);
       } else if (platform === 'instagram') {
-        console.log('Instagram metrics coming soon...');
-        return { platform: 'instagram', postId, error: 'Not implemented' };
+        return await instagramPublisher.getPostMetrics(postId);
       }
     } catch (error) {
       throw error;
