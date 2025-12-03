@@ -25,6 +25,8 @@ const trendDetector = require('./services/trend-detector');
 const authRoutes = require('./routes/auth');
 const brandRoutes = require('./routes/brands');
 const trendRoutes = require('./routes/trends');
+const copyRoutes = require('./routes/copy');
+const imageRoutes = require('./routes/images');
 
 // Import middleware
 const { verifyToken } = require('./middleware/auth');
@@ -57,6 +59,12 @@ app.use('/api/brands', brandRoutes);
 
 // Trend routes (mostly public)
 app.use('/api/trends', trendRoutes);
+
+// Copy generation routes (protected)
+app.use('/api/copy', copyRoutes);
+
+// Image generation routes (protected)
+app.use('/api/images', imageRoutes);
 
 // Protected routes example
 app.get('/api/protected', verifyToken, (req, res) => {
@@ -103,6 +111,9 @@ console.log('✅ TrendDetectorService initialized');
 console.log('✅ Auth routes mounted (/api/auth)');
 console.log('✅ Brand routes mounted (/api/brands)');
 console.log('✅ Trend routes mounted (/api/trends)');
+console.log('✅ Copy routes mounted (/api/copy)');
+console.log('✅ Image routes mounted (/api/images)');
+
 
 // Start automatic trend detection every 30 minutes
 setInterval(async () => {
@@ -137,6 +148,17 @@ app.listen(PORT, () => {
   console.log(`   GET    /api/trends/source/:source - Get trends by source`);
   console.log(`   GET    /api/trends/search/:query - Search trends`);
   console.log(`   POST   /api/trends/refresh - Manually refresh trends (protected)`);
+  console.log(`\n✍️  Copy Generation Endpoints (all protected):`);
+  console.log(`   POST   /api/copy/generate - Generate copy for trend`);
+  console.log(`   POST   /api/copy/variations - Generate multiple variations`);
+  console.log(`   GET    /api/copy/posts - Get user's generated posts`);
+  console.log(`   GET    /api/copy/posts/:postId - Get single post`);
+  console.log(`   PUT    /api/copy/posts/:postId - Update post`);
+  console.log(`   DELETE /api/copy/posts/:postId - Delete post`);
+  console.log(`\n🎨 Image Generation Endpoints (all protected):`);
+  console.log(`   POST   /api/images/generate - Generate image for post`);
+  console.log(`   POST   /api/images/generate-batch - Batch generate images`);
+  console.log(`   DELETE /api/images/delete/:publicId - Delete image`);
   console.log(`\n🎯 Bigness Backend Ready!\n`);
 });
 
