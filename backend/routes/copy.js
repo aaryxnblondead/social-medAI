@@ -2,6 +2,7 @@ const express = require('express');
 const { BrandProfile, Trend, GeneratedPost } = require('../models');
 const copyGenerator = require('../services/copy-generator');
 const { verifyToken } = require('../middleware/auth');
+const { cacheMiddleware, CACHE_TTL, deleteFromCache, invalidatePattern } = require('../middleware/cache');
 
 const router = express.Router();
 
@@ -51,6 +52,12 @@ router.post('/generate', verifyToken, async (req, res) => {
     });
 
     await post.save();
+
+    // Invalidate copy cache for this user
+    const redisClient = req.app.get('redisClient');
+    if (redisClient) {
+      await invalidatePattern(redisClient, `copy:posts:${req.userId}:*`);
+    }
 
     res.json({
       message: 'Copy generated successfully',
@@ -124,7 +131,7 @@ router.post('/variations', verifyToken, async (req, res) => {
 });
 
 // Get generated posts for user (protected)
-router.get('/posts', verifyToken, async (req, res) => {
+ router.get('/posts', cacheMiddleware('copy:posts', CACHE_TTL.POST), verifyToken, async (req, res) => {
   try {
     const { status, platform } = req.query;
 

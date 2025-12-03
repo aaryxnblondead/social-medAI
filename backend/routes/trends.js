@@ -1,12 +1,13 @@
 const express = require('express');
 const { Trend } = require('../models');
 const trendDetector = require('../services/trend-detector');
+const { cacheMiddleware, CACHE_TTL, invalidatePattern } = require('../middleware/cache');
 const { verifyToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all trends (public)
-router.get('/', async (req, res) => {
+router.get('/', cacheMiddleware('trends', CACHE_TTL.TRENDS), async (req, res) => {
   try {
     const limit = req.query.limit || 50;
     const trends = await trendDetector.getCurrentTrends(parseInt(limit));

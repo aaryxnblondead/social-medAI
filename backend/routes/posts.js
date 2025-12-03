@@ -1,148 +1,81 @@
 const express = require('express');
-const router = express.Router();
-const { verifyToken } = require('../middleware/auth');
-const Joi = require('joi');
-const { GeneratedPost } = require('../models');
-
-const scheduleSchema = Joi.object({
-  title: Joi.string().min(3).required(),
-  content: Joi.string().min(10).required(),
-  imageUrl: Joi.string().uri().optional(),
-  platformTargets: Joi.array().items(Joi.string()).default([]),
-  scheduledAt: Joi.date().required()
-});
-
-// Schedule a post
-router.post('/schedule', verifyToken, async (req, res) => {
-  try {
-    const { value, error } = scheduleSchema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.message });
-    const doc = await GeneratedPost.create({
-      userId: req.userId,
-      title: value.title,
-      content: value.content,
-      imageUrl: value.imageUrl,
-      platformTargets: value.platformTargets,
-      status: 'scheduled',
-      scheduledAt: value.scheduledAt
-    });
-    res.json({ message: 'Post scheduled', post: doc });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Get scheduled posts
-router.get('/scheduled', verifyToken, async (req, res) => {
-  try {
-    const rows = await GeneratedPost.find({ userId: req.userId, status: 'scheduled' }).sort({ scheduledAt: 1 });
-    res.json({ scheduled: rows });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Get drafts
-router.get('/drafts', verifyToken, async (req, res) => {
-  try {
-    const rows = await GeneratedPost.find({ userId: req.userId, status: 'draft' });
-    res.json({ drafts: rows });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Get published posts
-router.get('/published', verifyToken, async (req, res) => {
-  try {
-    const rows = await GeneratedPost.find({ userId: req.userId, status: 'published' }).sort({ publishedAt: -1 });
-    res.json({ published: rows });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Publish a specific post
-router.post('/:postId/publish', verifyToken, async (req, res) => {
-  try {
-    const { postId } = req.params;
-    const doc = await GeneratedPost.findOneAndUpdate(
-      { _id: postId, userId: req.userId },
-      { status: 'published', publishedAt: new Date() },
-      { new: true }
-    );
-    if (!doc) return res.status(404).json({ error: 'Post not found' });
-    res.json({ message: 'Post published', post: doc });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Update post metrics
-const metricsSchema = Joi.object({ impressions: Joi.number().min(0), clicks: Joi.number().min(0), likes: Joi.number().min(0), shares: Joi.number().min(0) }).min(1);
-router.put('/:postId/metrics', verifyToken, async (req, res) => {
-  try {
-    const { value, error } = metricsSchema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.message });
-    const { postId } = req.params;
-    const doc = await GeneratedPost.findOneAndUpdate(
-      { _id: postId, userId: req.userId },
-      { $set: { metrics: value } },
-      { new: true }
-    );
-    if (!doc) return res.status(404).json({ error: 'Post not found' });
-    res.json({ message: 'Metrics updated', post: doc });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Get analytics for a post
-router.get('/:postId/analytics', verifyToken, async (req, res) => {
-  try {
-    const { postId } = req.params;
-    const doc = await GeneratedPost.findOne({ _id: postId, userId: req.userId });
-    if (!doc) return res.status(404).json({ error: 'Post not found' });
-    const impressions = doc.metrics?.impressions || 0;
-    const clicks = doc.metrics?.clicks || 0;
-    const ctr = impressions ? Number(((clicks / impressions) * 100).toFixed(2)) : 0;
-    res.json({ postId, analytics: { impressions, clicks, ctr } });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-module.exports = router;
-const express = require('express');
 const { GeneratedPost } = require('../models');
 const postManager = require('../services/post-manager');
 const { verifyToken } = require('../middleware/auth');
+const { schedulePublishing, publishImmediate, getQueueStats, getJobStatus } = require('../services/publishing-queue');
 
 const router = express.Router();
 
-// Schedule a post (protected)
+// Schedule post via queue (replaces old schedule endpoint)
 router.post('/schedule', verifyToken, async (req, res) => {
   try {
-    const { postId, scheduledTime } = req.body;
+    const { postId, scheduledTime, platforms = ['twitter'] } = req.body;
 
     if (!postId || !scheduledTime) {
-      return res.status(400).json({ error: 'Post ID and scheduled time are required' });
+      return res.status(400).json({ error: 'Post ID and scheduled time required' });
     }
 
-    // Validate future date
-    const scheduleDate = new Date(scheduledTime);
-    if (scheduleDate <= new Date()) {
-      return res.status(400).json({ error: 'Scheduled time must be in the future' });
+    const post = await GeneratedPost.findOne({ _id: postId, userId: req.userId });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
     }
 
-    const post = await postManager.schedulePost(postId, req.userId, scheduledTime);
+    const job = await schedulePublishing(postId, req.userId, platforms, scheduledTime);
 
     res.json({
-      message: 'Post scheduled successfully',
-      post
+      message: 'Post scheduled',
+      jobId: job.id,
+      scheduledFor: scheduledTime
     });
   } catch (error) {
-    console.error('Schedule Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Publish immediately via queue
+router.post('/:postId/publish-now', verifyToken, async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { platforms = ['twitter'] } = req.body;
+
+    const post = await GeneratedPost.findOne({ _id: postId, userId: req.userId });
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const job = await publishImmediate(postId, req.userId, platforms);
+
+    res.json({
+      message: 'Post queued for immediate publishing',
+      jobId: job.id
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get queue stats (protected)
+router.get('/queue/stats', verifyToken, async (req, res) => {
+  try {
+    const stats = await getQueueStats();
+    res.json({ stats });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get job status (protected)
+router.get('/queue/job/:jobId', verifyToken, async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const status = await getJobStatus(jobId);
+    
+    if (!status) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    res.json({ status });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });

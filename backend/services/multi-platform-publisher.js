@@ -1,4 +1,5 @@
 const twitterPublisher = require('./twitter-publisher');
+const RetryService = require('./retry-service');
 
 class MultiPlatformPublisherService {
   constructor() {
@@ -11,7 +12,7 @@ class MultiPlatformPublisherService {
     };
   }
 
-  // Publish to single platform
+  // Publish to single platform (with retry)
   async publishToPlatform(post, platform) {
     try {
       console.log(`📤 Publishing to ${platform}...`);
@@ -20,8 +21,24 @@ class MultiPlatformPublisherService {
         throw new Error(`Platform ${platform} not supported yet`);
       }
 
-      if (platform === 'twitter') {
-        return await this.publishToTwitter(post);
+      // Use jittered backoff for resilience
+      const result = await RetryService.jitteredBackoff(
+        async () => {
+          if (platform === 'twitter') {
+            return await this.publishToTwitter(post);
+          } else if (platform === 'linkedin') {
+            return await this.publishToLinkedIn(post);
+          } else if (platform === 'facebook') {
+            return await this.publishToFacebook(post);
+          } else if (platform === 'instagram') {
+            return await this.publishToInstagram(post);
+          }
+        },
+        3,           // max retries
+        1000         // initial delay
+      );
+
+      return result;
       } else if (platform === 'linkedin') {
         return await this.publishToLinkedIn(post);
       } else if (platform === 'facebook') {
