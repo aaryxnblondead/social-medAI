@@ -23,6 +23,7 @@ const trendDetector = require('./services/trend-detector');
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const onboardingRoutes = require('./routes/onboarding');
 
 // Import queue service
 const { publishingQueue } = require('./services/publishing-queue');
@@ -60,6 +61,9 @@ app.get('/api/health', (req, res) => {
 
 // Auth routes (public)
 app.use('/api/auth', authRoutes);
+
+// Onboarding routes (protected)
+app.use('/api/onboarding', onboardingRoutes);
 
 // Brand routes (protected)
 app.use('/api/brands', brandRoutes);
@@ -213,6 +217,14 @@ app.listen(PORT, () => {
   console.log(`   GET    /api/brands/:id - Get single brand`);
   console.log(`   PUT    /api/brands/:id - Update brand`);
   console.log(`   DELETE /api/brands/:id - Delete brand`);
+  console.log(`\n🎯 Onboarding Endpoints (all protected):`);
+  console.log(`   POST   /api/onboarding/brand - Create/update brand profile`);
+  console.log(`   POST   /api/onboarding/influencer - Create/update influencer profile`);
+  console.log(`   GET    /api/onboarding/brand - Get brand profile`);
+  console.log(`   GET    /api/onboarding/influencer - Get influencer profile`);
+  console.log(`   PUT    /api/onboarding/brand - Update brand profile`);
+  console.log(`   PUT    /api/onboarding/influencer - Update influencer profile`);
+  console.log(`   GET    /api/onboarding/status - Check onboarding completion`);
   console.log(`\n📰 Trend Detection Endpoints (mostly public):`);
   console.log(`   GET    /api/trends - Get all trending topics`);
   console.log(`   GET    /api/trends/source/:source - Get trends by source`);

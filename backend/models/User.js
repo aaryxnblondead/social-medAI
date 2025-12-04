@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema({
     enum: ['brand', 'influencer'],
     default: 'brand'
   },
+  userType: {
+    type: String,
+    enum: ['brand', 'influencer', null],
+    default: null
+  },
+  onboardingComplete: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
