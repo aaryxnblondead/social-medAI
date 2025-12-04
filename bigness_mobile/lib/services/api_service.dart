@@ -51,6 +51,34 @@ class ApiService {
     }
   }
 
+  static Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: _getHeaders(),
+        body: jsonEncode(body),
+      ).timeout(Duration(seconds: 30));
+
+      return _handleResponse(response);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  // Helper: DELETE request
+  static Future<dynamic> delete(String endpoint) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: _getHeaders(),
+      ).timeout(Duration(seconds: 30));
+
+      return _handleResponse(response);
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   // Helper: GET request
   static Future<dynamic> get(String endpoint) async {
     try {
