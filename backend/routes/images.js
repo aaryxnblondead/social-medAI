@@ -2,6 +2,7 @@ const express = require('express');
 const { GeneratedPost, BrandProfile } = require('../models');
 const imageGenerator = require('../services/image-generator');
 const { verifyToken } = require('../middleware/auth');
+const { cacheMiddleware, CACHE_TTL, invalidatePattern } = require('../middleware/cache');
 
 const router = express.Router();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -35,13 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1F2937), Color(0xFF111827)],
-          ),
-        ),
+        decoration: BoxDecoration(gradient: AppTheme.blackToTealGradient),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -49,21 +44,35 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
+                  // Logo area
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.teal, width: 2),
+                    ),
+                    child: Text(
+                      '✨',
+                      style: TextStyle(fontSize: 48),
+                    ),
+                  ),
+                  SizedBox(height: 24),
                   Text(
                     'Bigness',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppTheme.white,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'AI-Powered Social Media Generator',
+                    'AI-Powered Social Media',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey[400],
+                      color: AppTheme.teal,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   SizedBox(height: 48),
@@ -71,15 +80,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Email field
                   TextField(
                     controller: _emailController,
+                    style: TextStyle(color: AppTheme.black),
                     decoration: InputDecoration(
                       hintText: 'Email',
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppTheme.white,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      prefixIcon: Icon(Icons.email, color: Colors.grey),
+                      prefixIcon: Icon(Icons.email, color: AppTheme.teal),
                     ),
                   ),
                   SizedBox(height: 16),
@@ -88,19 +98,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _passwordController,
                     obscureText: !_showPassword,
+                    style: TextStyle(color: AppTheme.black),
                     decoration: InputDecoration(
                       hintText: 'Password',
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppTheme.white,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
-                      prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                      prefixIcon: Icon(Icons.lock, color: AppTheme.teal),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _showPassword ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.grey,
+                          color: AppTheme.teal,
                         ),
                         onPressed: () {
                           setState(() => _showPassword = !_showPassword);
@@ -117,12 +128,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? Container(
                               padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.red[900],
+                                color: AppTheme.error.withOpacity(0.1),
+                                border: Border.all(color: AppTheme.error),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Text(
-                                auth.error!,
-                                style: TextStyle(color: Colors.red[200]),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error, color: AppTheme.error, size: 20),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      auth.error!,
+                                      style: TextStyle(
+                                        color: AppTheme.error,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
                           : SizedBox.shrink();
@@ -138,12 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 48,
                         child: ElevatedButton(
                           onPressed: auth.isLoading ? null : () => _handleLogin(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF10B981),
-                            disabledBackgroundColor: Colors.grey,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                          style: AppTheme.primaryButtonStyle.copyWith(
+                            minimumSize: MaterialStateProperty.all(Size.fromHeight(48)),
                           ),
                           child: auth.isLoading
                               ? SizedBox(
@@ -151,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.white),
                                   ),
                                 )
                               : Text(
@@ -159,7 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
                                   ),
                                 ),
                         ),
@@ -168,16 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushNamed('/signup');
-                    },
-                    child: Text(
-                      "Don't have an account? Sign up",
-                      style: TextStyle(
-                        color: Color(0xFF10B981),
-                        fontWeight: FontWeight.w500,
-                      ),
+                  Text(
+                    "Don't have an account? Sign up",
+                    style: TextStyle(
+                      color: AppTheme.white.withOpacity(0.7),
+                      fontSize: 14,
                     ),
                   ),
                 ],

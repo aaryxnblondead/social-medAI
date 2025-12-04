@@ -199,7 +199,7 @@ class _IndustryStep extends StatelessWidget {
         ),
         SizedBox(height: 8),
         Text(
-          'We'll tailor content suggestions based on your industry',
+          'We\'ll tailor content suggestions based on your industry',
           style: TextStyle(color: Colors.grey, fontSize: 14),
         ),
         SizedBox(height: 24),

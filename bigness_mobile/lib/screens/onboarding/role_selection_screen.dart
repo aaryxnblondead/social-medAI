@@ -2,21 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../models/onboarding_models.dart';
-import 'brand_onboarding_screen.dart';
-import 'influencer_onboarding_screen.dart';
+import '../../models/onboarding_questions.dart';
+import '../../theme/app_theme.dart';
+import 'onboarding_card_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1F2937), Color(0xFF111827)],
-          ),
-        ),
+        decoration: BoxDecoration(gradient: AppTheme.blackToTealGradient),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.all(24),
@@ -29,7 +24,7 @@ class RoleSelectionScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppTheme.white,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -37,7 +32,8 @@ class RoleSelectionScreen extends StatelessWidget {
                   'Choose your role to get started',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[400],
+                    color: AppTheme.teal,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 SizedBox(height: 48),
@@ -53,12 +49,16 @@ class RoleSelectionScreen extends StatelessWidget {
                     'Track engagement & ROI',
                     'RL-optimized content',
                   ],
+                  gradient: AppTheme.blackToMustardGradient,
                   onTap: () {
                     Provider.of<OnboardingProvider>(context, listen: false)
                         .selectRole(UserRole.brand);
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
-                        builder: (_) => BrandOnboardingScreen(),
+                        builder: (_) => OnboardingCardScreen(
+                          questions: brandQuestions,
+                          isBrand: true,
+                        ),
                       ),
                     );
                   },
@@ -76,12 +76,16 @@ class RoleSelectionScreen extends StatelessWidget {
                     'Manage collaborations',
                     'Analytics dashboard',
                   ],
+                  gradient: AppTheme.tealToBlackGradient,
                   onTap: () {
                     Provider.of<OnboardingProvider>(context, listen: false)
                         .selectRole(UserRole.influencer);
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
-                        builder: (_) => InfluencerOnboardingScreen(),
+                        builder: (_) => OnboardingCardScreen(
+                          questions: influencerQuestions,
+                          isBrand: false,
+                        ),
                       ),
                     );
                   },
@@ -101,6 +105,7 @@ class _RoleCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final List<String> features;
+  final LinearGradient gradient;
   final VoidCallback onTap;
 
   const _RoleCard({
@@ -108,6 +113,7 @@ class _RoleCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.features,
+    required this.gradient,
     required this.onTap,
   });
 
@@ -116,64 +122,86 @@ class _RoleCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: gradient,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppTheme.black.withOpacity(0.3),
               blurRadius: 12,
               offset: Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(emoji, style: TextStyle(fontSize: 32)),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        child: Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppTheme.white.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(emoji, style: TextStyle(fontSize: 32)),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.white,
+                          ),
+                        ),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppTheme.white.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward, color: AppTheme.white),
+                ],
+              ),
+              SizedBox(height: 16),
+              ...features.map((feature) {
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Row(
                     children: [
                       Text(
-                        title,
+                        '✓',
                         style: TextStyle(
-                          fontSize: 20,
+                          color: AppTheme.white,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
                         ),
                       ),
+                      SizedBox(width: 8),
                       Text(
-                        subtitle,
+                        feature,
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                          fontSize: 13,
+                          color: AppTheme.white.withOpacity(0.8),
                         ),
                       ),
                     ],
                   ),
-                ),
-                Icon(Icons.arrow_forward, color: Color(0xFF10B981)),
-              ],
-            ),
-            SizedBox(height: 16),
-            ...features.map((feature) {
-              return Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Text('✓', style: TextStyle(color: Color(0xFF10B981), fontSize: 16)),
-                    SizedBox(width: 8),
-                    Text(feature, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
-                  ],
-                ),
-              );
-            }).toList(),
-          ],
+                );
+              }).toList(),
+            ],
+          ),
         ),
       ),
     );

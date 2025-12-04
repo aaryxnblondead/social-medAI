@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/image_provider.dart';
+import '../providers/image_provider.dart' as img_provider;
 import '../providers/copy_provider.dart';
 
 class ImageGenerationScreen extends StatefulWidget {
@@ -34,7 +34,7 @@ class _ImageGenerationScreenState extends State<ImageGenerationScreen> {
       return;
     }
 
-    await Provider.of<ImageProvider>(context, listen: false).generateImage(
+    await Provider.of<img_provider.ImageProvider>(context, listen: false).generateImage(
       postId: widget.postId,
       prompt: _promptController.text,
       style: _selectedStyle,
@@ -126,7 +126,7 @@ class _ImageGenerationScreenState extends State<ImageGenerationScreen> {
             SizedBox(height: 32),
 
             // Generate button with progress
-            Consumer<ImageProvider>(
+            Consumer<img_provider.ImageProvider>(
               builder: (context, imageProvider, _) {
                 return Column(
                   children: [
@@ -197,7 +197,7 @@ class _ImageGenerationScreenState extends State<ImageGenerationScreen> {
             SizedBox(height: 32),
 
             // Generated image preview
-            Consumer<ImageProvider>(
+            Consumer<img_provider.ImageProvider>(
               builder: (context, imageProvider, _) {
                 if (imageProvider.generatedImageUrl == null) {
                   return SizedBox.shrink();

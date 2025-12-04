@@ -418,7 +418,7 @@ class _CollaborationStep extends StatelessWidget {
         ),
         SizedBox(height: 24),
         TextField(
-          onChanged: provider.updateMinBudget,
+          onChanged: (value) => provider.updateMinBudget(int.tryParse(value) ?? 0),
           decoration: InputDecoration(
             labelText: 'Minimum budget per collaboration (₹)',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),

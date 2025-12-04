@@ -211,4 +211,25 @@ class ApiService {
   static Future<Map<String, dynamic>> trainWeekly() async {
     return await post('/rl/train-weekly');
   }
+
+  // ===== Onboarding =====
+  static Future<Map<String, dynamic>> submitBrandOnboarding(Map<String, dynamic> data) async {
+    return await post('/onboarding/brand', body: data);
+  }
+
+  static Future<Map<String, dynamic>> submitInfluencerOnboarding(Map<String, dynamic> data) async {
+    return await post('/onboarding/influencer', body: data);
+  }
+
+  static Future<Map<String, dynamic>> getBrandProfile() async {
+    return await get('/onboarding/brand');
+  }
+
+  static Future<Map<String, dynamic>> getInfluencerProfile() async {
+    return await get('/onboarding/influencer');
+  }
+
+  static Future<Map<String, dynamic>> getOnboardingStatus() async {
+    return await get('/onboarding/status');
+  }
 }

@@ -7,7 +7,7 @@ import 'providers/trends_provider.dart';
 import 'providers/copy_provider.dart';
 import 'providers/publishing_provider.dart';
 import 'providers/posts_provider.dart';
-import 'providers/image_provider.dart';
+import 'providers/image_provider.dart' as img_provider;
 import 'providers/onboarding_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
@@ -17,6 +17,10 @@ import 'screens/publish_screen.dart';
 import 'screens/posts_list_screen.dart';
 import 'screens/post_detail_screen.dart';
 import 'screens/onboarding/role_selection_screen.dart';
+import 'services/api_service.dart';
+import 'theme/app_theme.dart';
+import 'screens/onboarding/onboarding_card_screen.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,29 +39,36 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CopyProvider()),
         ChangeNotifierProvider(create: (_) => PublishingProvider()),
         ChangeNotifierProvider(create: (_) => PostsProvider()),
-        ChangeNotifierProvider(create: (_) => ImageProvider()),
+        ChangeNotifierProvider(create: (_) => img_provider.ImageProvider()),
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
       ],
       child: MaterialApp(
         title: 'Bigness',
-        theme: ThemeData(
-          primaryColor: Color(0xFF10B981),
-          useMaterial3: true,
-          fontFamily: 'Roboto',
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            elevation: 1,
-          ),
-        ),
+        theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
         home: Consumer<AuthProvider>(
           builder: (context, auth, _) {
             if (!auth.isLoggedIn) {
               return LoginScreen();
             }
-            // TODO: Check if onboarding is complete
-            // For now, go to dashboard
-            return HomeScreen();
+            // Check if onboarding is complete
+            return FutureBuilder<Map<String, dynamic>>(
+              future: ApiService.getOnboardingStatus(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                
+                if (snapshot.hasError || snapshot.data == null) {
+                  return HomeScreen(); // Default to dashboard on error
+                }
+                
+                final isComplete = snapshot.data!['onboardingComplete'] ?? false;
+                return isComplete ? HomeScreen() : RoleSelectionScreen();
+              },
+            );
           },
         ),
         routes: {
