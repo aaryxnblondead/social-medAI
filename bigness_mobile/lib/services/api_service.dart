@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5000/api';
+  // Use 10.0.2.2 for Android emulator, or your PC's IP address (e.g., 192.168.x.x) for physical device
+  // To find your IP: run 'ipconfig' on Windows and look for IPv4 Address
+  static const String baseUrl = 'http://192.168.1.6:5000/api'; // Updated to PC IP for physical device
   static String? _token;
 
   // Initialize token from storage
@@ -116,10 +119,12 @@ class ApiService {
   }
 
   // ===== Auth Endpoints =====
-  static Future<Map<String, dynamic>> register(String email, String password) async {
+  static Future<Map<String, dynamic>> register(String email, String password, String name, String accountType) async {
     final response = await post('/auth/register', body: {
       'email': email,
       'password': password,
+      'name': name,
+      'accountType': accountType,
     });
     if (response['token'] != null) {
       await saveToken(response['token']);

@@ -5,9 +5,18 @@ import 'providers/analytics_provider.dart';
 import 'providers/brand_provider.dart';
 import 'providers/trends_provider.dart';
 import 'providers/copy_provider.dart';
+import 'providers/publishing_provider.dart';
+import 'providers/posts_provider.dart';
+import 'providers/image_provider.dart';
+import 'providers/onboarding_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/signup_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/generate_post_screen.dart';
+import 'screens/publish_screen.dart';
+import 'screens/posts_list_screen.dart';
+import 'screens/post_detail_screen.dart';
+import 'screens/onboarding/role_selection_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +33,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BrandProvider()),
         ChangeNotifierProvider(create: (_) => TrendsProvider()),
         ChangeNotifierProvider(create: (_) => CopyProvider()),
+        ChangeNotifierProvider(create: (_) => PublishingProvider()),
+        ChangeNotifierProvider(create: (_) => PostsProvider()),
+        ChangeNotifierProvider(create: (_) => ImageProvider()),
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
       ],
       child: MaterialApp(
         title: 'Bigness',
@@ -39,12 +52,20 @@ class MyApp extends StatelessWidget {
         ),
         home: Consumer<AuthProvider>(
           builder: (context, auth, _) {
-            return auth.isLoggedIn ? HomeScreen() : LoginScreen();
+            if (!auth.isLoggedIn) {
+              return LoginScreen();
+            }
+            // TODO: Check if onboarding is complete
+            // For now, go to dashboard
+            return HomeScreen();
           },
         ),
         routes: {
           '/login': (_) => LoginScreen(),
+          '/signup': (_) => SignupScreen(),
           '/home': (_) => HomeScreen(),
+          '/dashboard': (_) => HomeScreen(),
+          '/onboarding': (_) => RoleSelectionScreen(),
         },
       ),
     );
@@ -62,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     DashboardScreen(),
     GeneratePostScreen(),
-    // Add more screens here
+    PostManagementScreen(),
   ];
 
   @override
@@ -81,6 +102,56 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.add_circle),
             label: 'Generate',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Posts',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PostManagementScreen extends StatefulWidget {
+  @override
+  State<PostManagementScreen> createState() => _PostManagementScreenState();
+}
+
+class _PostManagementScreenState extends State<PostManagementScreen> with TickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Posts'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'Drafts'),
+            Tab(text: 'Scheduled'),
+            Tab(text: 'Published'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          PostsListScreen(tab: 'drafts'),
+          PostsListScreen(tab: 'scheduled'),
+          PostsListScreen(tab: 'published'),
         ],
       ),
     );

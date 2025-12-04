@@ -168,9 +168,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: 16),
-                  Text(
-                    "Don't have an account? Sign up",
-                    style: TextStyle(color: Colors.grey[400]),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/signup');
+                    },
+                    child: Text(
+                      "Don't have an account? Sign up",
+                      style: TextStyle(
+                        color: Color(0xFF10B981),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),

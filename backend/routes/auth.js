@@ -15,7 +15,7 @@ function signToken(user) {
 // POST /api/auth/register
 router.post('/register', async (req, res, next) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, accountType } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'email, password, and name are required' });
     }
@@ -23,9 +23,22 @@ router.post('/register', async (req, res, next) => {
     if (existing) {
       return res.status(409).json({ error: 'Email already registered' });
     }
-    const user = await User.create({ email, password, name });
+    const user = await User.create({ 
+      email, 
+      password, 
+      name,
+      accountType: accountType || 'brand'
+    });
     const token = signToken(user);
-    res.status(201).json({ token, user: { id: user._id, email: user.email, name: user.name } });
+    res.status(201).json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name,
+        accountType: user.accountType
+      } 
+    });
   } catch (err) {
     next(err);
   }

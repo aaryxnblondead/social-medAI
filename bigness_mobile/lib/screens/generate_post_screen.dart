@@ -5,6 +5,8 @@ import '../providers/trends_provider.dart';
 import '../providers/copy_provider.dart';
 import 'brand_screen.dart';
 import 'trends_screen.dart';
+import 'edit_post_screen.dart';
+import 'publish_screen.dart';
 
 class GeneratePostScreen extends StatefulWidget {
   @override
@@ -250,26 +252,64 @@ class _GeneratePostScreenState extends State<GeneratePostScreen> {
                                 child: Chip(label: Text('📸 Image attached')),
                               ),
                             SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 40,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => EditPostScreen(
+                                        postId: copyProvider.currentPost!.id,
+                                        initialCopy: copyProvider.currentPost!.copy,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey[600],
+                                ),
+                                child: Text('✏️ Edit Post'),
+                              ),
+                            ),
+                            SizedBox(height: 12),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    // Navigate to schedule screen
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF10B981),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => PublishScreen(
+                                            postId: copyProvider.currentPost!.id,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFF10B981),
+                                    ),
+                                    child: Text('📅 Schedule'),
                                   ),
-                                  child: Text('Schedule Post'),
                                 ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    // Publish immediately
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFFF59E0B),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => PublishScreen(
+                                            postId: copyProvider.currentPost!.id,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFFF59E0B),
+                                    ),
+                                    child: Text('🚀 Publish'),
                                   ),
-                                  child: Text('Publish Now'),
                                 ),
                               ],
                             ),

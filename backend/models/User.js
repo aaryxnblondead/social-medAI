@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  accountType: {
+    type: String,
+    enum: ['brand', 'influencer'],
+    default: 'brand'
+  },
   createdAt: {
     type: Date,
     default: Date.now

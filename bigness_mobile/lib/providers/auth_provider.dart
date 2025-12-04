@@ -37,18 +37,20 @@ class AuthProvider with ChangeNotifier {
     return null; // Placeholder
   }
 
-  Future<void> register(String email, String password) async {
+  Future<bool> register(String email, String password, String name, String accountType) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await ApiService.register(email, password);
+      final response = await ApiService.register(email, password, name, accountType);
       _user = User.fromJson(response['user']);
       _isLoggedIn = true;
       _error = null;
+      return true; // Proceed to onboarding
     } catch (e) {
       _error = e.toString();
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
