@@ -6,14 +6,14 @@ class Brand {
   final String brandName;
   final String industry;
   final String targetAudience;
-  final String voiceTone;
+  final String brandVoice;
 
   Brand({
     required this.id,
     required this.brandName,
     required this.industry,
     required this.targetAudience,
-    required this.voiceTone,
+    required this.brandVoice,
   });
 
   factory Brand.fromJson(Map<String, dynamic> json) {
@@ -22,7 +22,7 @@ class Brand {
       brandName: json['brandName'] ?? '',
       industry: json['industry'] ?? '',
       targetAudience: json['targetAudience'] ?? '',
-      voiceTone: json['voiceTone'] ?? '',
+      brandVoice: json['brandVoice'] ?? json['voiceTone'] ?? '',
     );
   }
 }

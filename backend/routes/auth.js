@@ -2,6 +2,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { User } = require('../models');
+const { authLimiter } = require('../middleware/rateLimiter');
+
+// Apply rate limiting to auth routes
+router.use(authLimiter);
 
 // Helper to generate JWT
 function signToken(user) {
@@ -19,6 +23,11 @@ router.post('/register', async (req, res, next) => {
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'email, password, and name are required' });
     }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(409).json({ error: 'Email already registered' });
@@ -27,7 +36,8 @@ router.post('/register', async (req, res, next) => {
       email, 
       password, 
       name,
-      accountType: accountType || 'brand'
+      accountType: accountType || 'brand',
+      'security.lastPasswordChange': new Date()
     });
     const token = signToken(user);
     res.status(201).json({ 
@@ -36,7 +46,8 @@ router.post('/register', async (req, res, next) => {
         id: user._id, 
         email: user.email, 
         name: user.name,
-        accountType: user.accountType
+        accountType: user.accountType,
+        subscription: user.subscription
       } 
     });
   } catch (err) {
@@ -57,10 +68,28 @@ router.post('/login', async (req, res, next) => {
     }
     const match = await user.comparePassword(password);
     if (!match) {
+      // Increment failed attempts
+      await user.incLoginAttempts();
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    // Reset failed attempts on successful login
+    if (user.security.failedLoginAttempts > 0) {
+      await user.resetLoginAttempts();
+    }
+
     const token = signToken(user);
-    res.json({ token, user: { id: user._id, email: user.email, name: user.name } });
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name,
+        accountType: user.accountType,
+        onboardingComplete: user.onboardingComplete,
+        subscription: user.subscription
+      } 
+    });
   } catch (err) {
     next(err);
   }

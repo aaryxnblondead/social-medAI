@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,11 +13,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _showPassword = false;
+  final _serverUrlController = TextEditingController();
+  bool _serverExpanded = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _serverUrlController.dispose();
     super.dispose();
   }
 
@@ -30,6 +34,19 @@ class _LoginScreenState extends State<LoginScreen> {
     if (authProvider.isLoggedIn) {
       Navigator.of(context).pushReplacementNamed('/dashboard');
     }
+  }
+
+  Future<void> _loadCurrentServerUrl() async {
+    await ApiService.init();
+    setState(() {
+      _serverUrlController.text = ApiService.baseUrl;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentServerUrl();
   }
 
   @override
@@ -76,6 +93,76 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 48),
+
+                  // Server URL advanced setting
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => setState(() => _serverExpanded = !_serverExpanded),
+                      icon: Icon(_serverExpanded ? Icons.expand_less : Icons.expand_more, color: AppTheme.teal),
+                      label: Text('Server Settings', style: TextStyle(color: AppTheme.teal)),
+                    ),
+                  ),
+                  AnimatedCrossFade(
+                    crossFadeState: _serverExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                    duration: const Duration(milliseconds: 200),
+                    firstChild: Column(
+                      children: [
+                        TextField(
+                          controller: _serverUrlController,
+                          style: TextStyle(color: AppTheme.black),
+                          decoration: InputDecoration(
+                            hintText: 'http://10.0.2.2:5000/api or http://<PC_IP>:5000/api',
+                            filled: true,
+                            fillColor: AppTheme.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: Icon(Icons.link, color: AppTheme.teal),
+                          ),
+                          keyboardType: TextInputType.url,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final url = _serverUrlController.text.trim();
+                                  if (url.isEmpty) return;
+                                  await ApiService.setBaseUrl(url);
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('✅ Server URL saved')),
+                                  );
+                                },
+                                child: const Text('Save Server URL'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  await ApiService.init();
+                                  setState(() {
+                                    _serverUrlController.text = ApiService.baseUrl;
+                                  });
+                                  if (!mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('🔄 Server URL refreshed')),
+                                  );
+                                },
+                                child: const Text('Use Default'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                    secondChild: const SizedBox.shrink(),
+                  ),
 
                   // Email field
                   TextField(
@@ -186,11 +273,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: 16),
-                  Text(
-                    "Don't have an account? Sign up",
-                    style: TextStyle(
-                      color: AppTheme.white.withOpacity(0.7),
-                      fontSize: 14,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushNamed('/signup');
+                    },
+                    child: Text(
+                      "Don't have an account? Sign up",
+                      style: TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],

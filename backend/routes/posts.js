@@ -6,6 +6,27 @@ const { schedulePublishing, publishImmediate, getQueueStats, getJobStatus } = re
 
 const router = express.Router();
 
+// Get single post details (protected)
+router.get('/:postId', verifyToken, async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await GeneratedPost.findOne({
+      _id: postId,
+      userId: req.userId
+    }).populate('brandProfileId').populate('trendId');
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json({ post });
+  } catch (error) {
+    console.error('Get Post Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Schedule post via queue (replaces old schedule endpoint)
 router.post('/schedule', verifyToken, async (req, res) => {
   try {

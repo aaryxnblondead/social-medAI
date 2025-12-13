@@ -32,8 +32,50 @@ class CopyProvider with ChangeNotifier {
       });
       
       _currentPost = GeneratedPost.fromJson(response['post']);
+      
+      // Add to drafts list if not already there
+      if (!_draftPosts.any((p) => p.id == _currentPost!.id)) {
+        _draftPosts.insert(0, _currentPost!);
+      }
     } catch (e) {
       _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<GeneratedPost?> generateImage({
+    required String brandId,
+    required String trendId,
+    required String platform,
+    String? description,
+    String? style,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await ApiService.post('/images/generate', body: {
+        'brandId': brandId,
+        'trendId': trendId,
+        'platform': platform,
+        'description': description,
+        'style': style ?? 'professional',
+      });
+      
+      _currentPost = GeneratedPost.fromJson(response['post']);
+      
+      // Add to drafts list if not already there
+      if (!_draftPosts.any((p) => p.id == _currentPost!.id)) {
+        _draftPosts.insert(0, _currentPost!);
+      }
+
+      return _currentPost;
+    } catch (e) {
+      _error = e.toString();
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();

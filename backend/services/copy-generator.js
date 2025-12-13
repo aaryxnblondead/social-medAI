@@ -14,8 +14,8 @@ class CopyGeneratorService {
 
       const prompt = this.buildPrompt(brand, trend, platform);
 
-      const message = await this.groq.messages.create({
-        model: 'mixtral-8x7b-32768',
+      const completion = await this.groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 300,
         messages: [
           {
@@ -25,7 +25,7 @@ class CopyGeneratorService {
         ]
       });
 
-      const copy = message.content[0].text;
+      const copy = completion.choices[0].message.content;
       
       console.log(`✅ Copy generated successfully`);
       return copy;
@@ -83,7 +83,7 @@ class CopyGeneratorService {
 
     return `You are a social media copywriter for ${brand.brandName}, a ${brand.industry} company.
     
-Your brand voice: ${brand.voiceTone}
+Your brand voice: ${brand.brandVoice || brand.voiceTone || 'professional'}
 Brand keywords: ${brand.keywords?.join(', ') || 'innovation, growth, technology'}
 Target audience: ${brand.targetAudience}
 

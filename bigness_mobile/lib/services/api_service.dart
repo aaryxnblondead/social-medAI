@@ -1,20 +1,42 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:io';
+// import 'dart:io';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class ApiService {
-  // Use 10.0.2.2 for Android emulator, or your PC's IP address (e.g., 192.168.x.x) for physical device
-  // To find your IP: run 'ipconfig' on Windows and look for IPv4 Address
-  static const String baseUrl = 'http://192.168.1.6:5000/api'; // Updated to PC IP for physical device
+  // Base URL can be overridden via SharedPreferences key 'api_base_url'.
+  // Defaults:
+  // - Android emulator: http://10.0.2.2:5000/api
+  // - Windows/macOS/iOS simulators: http://localhost:5000/api
+  // - Physical device: set your PC IP like http://192.168.x.x:5000/api
+  static String baseUrl = 'http://localhost:5000/api';
   static String? _token;
 
   // Initialize token from storage
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('token');
+    final savedBase = prefs.getString('api_base_url');
+    if (savedBase != null && savedBase.isNotEmpty) {
+      baseUrl = savedBase;
+    } else {
+      // Auto-detect reasonable default
+      if (Platform.isAndroid) {
+        // Android emulator maps host loopback to 10.0.2.2
+        baseUrl = 'http://10.0.2.2:5000/api';
+      } else {
+        baseUrl = 'http://localhost:5000/api';
+      }
+    }
+  }
+
+  // Save/override base URL (optional helper)
+  static Future<void> setBaseUrl(String url) async {
+    baseUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('api_base_url', url);
   }
 
   // Save token
@@ -195,12 +217,20 @@ class ApiService {
 
   // ===== Analytics =====
   static Future<Map<String, dynamic>> getUserAnalytics() async {
-    return await get('/analytics/user');
+    return await get('/analytics/dashboard');
   }
 
   static Future<List<dynamic>> getTopPosts({int limit = 10}) async {
-    final response = await get('/analytics/top-posts?limit=$limit');
-    return response['posts'] ?? [];
+    final response = await get('/analytics/dashboard');
+    return response['topPosts'] ?? [];
+  }
+
+  static Future<Map<String, dynamic>> syncPlatformMetrics({String? platform}) async {
+    return await post('/analytics/sync', body: platform != null ? {'platform': platform} : {});
+  }
+
+  static Future<Map<String, dynamic>> getPlatformAnalytics(String platform) async {
+    return await get('/analytics/platform/$platform');
   }
 
   // ===== RL Optimization =====
@@ -231,5 +261,10 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getOnboardingStatus() async {
     return await get('/onboarding/status');
+  }
+
+  // ===== Social Auth Status =====
+  static Future<Map<String, dynamic>> getSocialStatus() async {
+    return await get('/social-auth/status');
   }
 }

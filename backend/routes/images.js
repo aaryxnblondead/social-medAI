@@ -6,8 +6,82 @@ const { cacheMiddleware, CACHE_TTL, invalidatePattern } = require('../middleware
 
 const router = express.Router();
 
-// Generate image for post (protected)
+// Generate image for brand/trend (like copy generation)
 router.post('/generate', verifyToken, async (req, res) => {
+  try {
+    const { brandId, trendId, platform, style, description } = req.body;
+
+    // Validation
+    if (!brandId || !trendId) {
+      return res.status(400).json({ error: 'Brand ID and Trend ID are required' });
+    }
+
+    // Verify brand belongs to user
+    const brand = await BrandProfile.findOne({
+      _id: brandId,
+      userId: req.userId
+    });
+
+    if (!brand) {
+      return res.status(404).json({ error: 'Brand not found' });
+    }
+
+    // Get trend (optional - can work without it)
+    const Trend = require('../models').Trend;
+    let trendData = null;
+    if (trendId) {
+      trendData = await Trend.findById(trendId);
+    }
+
+    // Build image prompt
+    const imageDescription = description || 
+      `${brand.brandName} - ${brand.industry} brand visual for ${trendData?.title || 'social media post'}`;
+
+    // Generate image
+    const imageResult = await imageGenerator.generateAndUpload(
+      imageDescription,
+      brand.brandName,
+      style || 'professional'
+    );
+
+    // Create a post with the image
+    const post = new GeneratedPost({
+      userId: req.userId,
+      brandProfileId: brandId,
+      trendId: trendId,
+      platform: platform || 'instagram',
+      copy: imageDescription,
+      imageUrl: imageResult.url,
+      imagePublicId: imageResult.publicId,
+      status: 'draft',
+      metrics: {
+        likes: 0,
+        retweets: 0,
+        replies: 0
+      }
+    });
+
+    await post.save();
+
+    // Invalidate cache
+    const redisClient = req.app.get('redisClient');
+    if (redisClient) {
+      await invalidatePattern(redisClient, `copy:posts:${req.userId}:*`);
+    }
+
+    res.json({
+      message: 'Image generated successfully',
+      image: imageResult,
+      post
+    });
+  } catch (error) {
+    console.error('Generate Image Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate image for existing post (protected)
+router.post('/generate-for-post', verifyToken, async (req, res) => {
   try {
     const { postId, style } = req.body;
 

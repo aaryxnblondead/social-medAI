@@ -41,11 +41,12 @@ router.post('/twitter', verifyToken, async (req, res) => {
     let twitterResult;
     if (post.imageUrl) {
       twitterResult = await twitterPublisher.postTweetWithImage(
+        req.userId,
         post.copy,
         post.imageUrl
       );
     } else {
-      twitterResult = await twitterPublisher.postTweet(post.copy);
+      twitterResult = await twitterPublisher.postTweet(req.userId, post.copy);
     }
 
     // Update post with Twitter data
@@ -74,7 +75,7 @@ router.get('/twitter/metrics/:tweetId', verifyToken, async (req, res) => {
   try {
     const { tweetId } = req.params;
 
-    const metrics = await twitterPublisher.getTweetMetrics(tweetId);
+    const metrics = await twitterPublisher.getTweetMetrics(req.userId, tweetId);
 
     res.json({
       message: 'Metrics fetched successfully',
@@ -111,7 +112,7 @@ router.delete('/twitter/:tweetId', verifyToken, async (req, res) => {
     }
 
     // Delete from Twitter
-    const deleteResult = await twitterPublisher.deleteTweet(tweetId);
+    const deleteResult = await twitterPublisher.deleteTweet(req.userId, tweetId);
 
     res.json({
       message: 'Tweet deleted successfully',
@@ -180,7 +181,7 @@ router.post('/publish-scheduled', verifyToken, async (req, res) => {
     for (const post of postsDue) {
       try {
         // Publish to Twitter
-        const twitterResult = await twitterPublisher.postTweet(post.copy);
+        const twitterResult = await twitterPublisher.postTweet(post.userId, post.copy);
 
         // Update post
         post.twitterPostId = twitterResult.tweetId;

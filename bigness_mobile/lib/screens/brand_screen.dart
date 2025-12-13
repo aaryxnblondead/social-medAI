@@ -77,13 +77,19 @@ class _BrandScreenState extends State<BrandScreen> {
                   'brandName': nameCtrl.text,
                   'industry': industryCtrl.text,
                   'targetAudience': audienceCtrl.text,
-                  'voiceTone': toneCtrl.text,
+                  'brandVoice': toneCtrl.text,
                   'keywords': keywordsCtrl.text,
                 });
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Brand created!')),
-                );
+                if (brandProvider.error == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Brand created!')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: \${brandProvider.error}')),
+                  );
+                }
               }
             },
             child: Text('Create'),
@@ -154,7 +160,7 @@ class _BrandScreenState extends State<BrandScreen> {
                         style: TextStyle(color: isSelected ? Colors.white70 : Colors.grey),
                       ),
                       Text(
-                        'Tone: ${brand.voiceTone}',
+                        'Tone: ${brand.brandVoice}',
                         style: TextStyle(color: isSelected ? Colors.white70 : Colors.grey),
                       ),
                     ],

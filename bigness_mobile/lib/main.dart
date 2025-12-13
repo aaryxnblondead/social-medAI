@@ -9,21 +9,26 @@ import 'providers/publishing_provider.dart';
 import 'providers/posts_provider.dart';
 import 'providers/image_provider.dart' as img_provider;
 import 'providers/onboarding_provider.dart';
+import 'providers/social_accounts_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/generate_post_screen.dart';
-import 'screens/publish_screen.dart';
+// import 'screens/publish_screen.dart';
 import 'screens/posts_list_screen.dart';
-import 'screens/post_detail_screen.dart';
+// import 'screens/post_detail_screen.dart';
 import 'screens/onboarding/role_selection_screen.dart';
 import 'services/api_service.dart';
 import 'theme/app_theme.dart';
-import 'screens/onboarding/onboarding_card_screen.dart';
+// import 'screens/onboarding/onboarding_card_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize API service and load saved auth token
+  await ApiService.init();
+  
   runApp(MyApp());
 }
 
@@ -33,6 +38,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => SocialAccountsProvider()),
         ChangeNotifierProvider(create: (_) => AnalyticsProvider()),
         ChangeNotifierProvider(create: (_) => BrandProvider()),
         ChangeNotifierProvider(create: (_) => TrendsProvider()),

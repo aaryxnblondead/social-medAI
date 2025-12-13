@@ -20,10 +20,20 @@ const metaAdsService = require('./services/meta-ads-service');
 const googleAdsService = require('./services/google-ads-service');
 const adsConfigService = require('./services/ads-config-service');
 const trendDetector = require('./services/trend-detector');
+const adsDecisionEngine = require('./services/ads-decision-engine');
+
+// Import jobs
+const trendDetectionJob = require('./jobs/trend-detection-job');
+const engagementTrackingJob = require('./jobs/engagement-tracking-job');
+const rlTrainingJob = require('./jobs/rl-training-job');
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const accountRoutes = require('./routes/account');
 const onboardingRoutes = require('./routes/onboarding');
+const socialAuthRoutes = require('./routes/social-auth');
+const adsRoutes = require('./routes/ads');
+const healthRoutes = require('./routes/health');
 
 // Import queue service
 const { publishingQueue } = require('./services/publishing-queue');
@@ -35,35 +45,56 @@ const postRoutes = require('./routes/posts');
 const publishRoutes = require('./routes/publish');
 const multiPublishRoutes = require('./routes/multi-publish');
 const rlRoutes = require('./routes/rl');
+const analyticsRoutes = require('./routes/analytics');
 
 // Import middleware
 const { verifyToken } = require('./middleware/auth');
 
 const app = express();
 
+// Initialize Sentry for error tracking (if configured)
+if (process.env.SENTRY_DSN) {
+  const Sentry = require('@sentry/node');
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: 0.1
+  });
+  
+  // Request handler must be first
+  app.use(Sentry.Handlers.requestHandler());
+  console.log('✅ Sentry initialized');
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Health check endpoint (public)
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    services: {
-      mongodb: 'connected',
-      redis: 'connected',
-      ads: 'ready',
-      trends: 'ready'
-    }
-  });
+// Health check endpoints (public)
+app.use('/api/health', healthRoutes);
+
+// Legacy health check for backward compatibility
+app.get('/health', (req, res) => {
+  res.redirect('/api/health');
 });
 
 // Auth routes (public)
 app.use('/api/auth', authRoutes);
+console.log('✅ Auth routes mounted (/api/auth)');
+
+// Account management routes (protected)
+app.use('/api/account', accountRoutes);
+console.log('✅ Account routes mounted (/api/account)');
+
+// Social OAuth routes (protected)
+app.use('/api/social-auth', socialAuthRoutes);
+console.log('✅ Social Auth routes mounted (/api/social-auth)');
 
 // Onboarding routes (protected)
 app.use('/api/onboarding', onboardingRoutes);
+
+// Ads management routes (protected)
+app.use('/api/ads', adsRoutes);
 
 // Brand routes (protected)
 app.use('/api/brands', brandRoutes);
@@ -87,14 +118,14 @@ app.use('/api/publish/multi', multiPublishRoutes);
 // RL & Optimization routes (protected)
 app.use('/api/rl', rlRoutes);
 
-// Protected routes example
-app.get('/api/protected', verifyToken, (req, res) => {
-  res.json({
-    message: 'This is a protected endpoint',
-    userId: req.userId,
-    user: req.user
-  });
-});
+// Analytics routes (protected)
+app.use('/api/analytics', analyticsRoutes);
+
+// Sentry error handler (must be before other error handlers)
+if (process.env.SENTRY_DSN) {
+  const Sentry = require('@sentry/node');
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -134,7 +165,8 @@ setInterval(async () => {
 
 // Initialize weekly RL training job
 const scheduleWeeklyTraining = () => {
-  // Run every Monday at 2 AM
+  // Deprecated: Now handled by rl-training-job.js
+  // Keeping for backward compatibility but job takes precedence
   const getNextMonday = () => {
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -149,16 +181,15 @@ const scheduleWeeklyTraining = () => {
     const nextRun = getNextMonday();
     const delayMs = nextRun.getTime() - Date.now();
 
-    console.log(`📅 Weekly RL training scheduled for ${nextRun.toISOString()}`);
+    console.log(`📅 Legacy weekly RL training scheduled for ${nextRun.toISOString()}`);
 
     setTimeout(async () => {
       try {
-        console.log('🤖 Running weekly RL training for all users...');
-        // In production, iterate through all users and call trainWeekly
-        // For now, just log
-        console.log('✅ Weekly RL training completed');
+        console.log('🤖 Running legacy weekly RL training (use rlTrainingJob instead)...');
+        // Deprecated - job handles this now
+        console.log('⚠️ Use rlTrainingJob for weekly training');
       } catch (error) {
-        console.error('❌ Weekly training error:', error.message);
+        console.error('❌ Legacy training error:', error.message);
       }
 
       // Schedule next week's run
@@ -166,19 +197,23 @@ const scheduleWeeklyTraining = () => {
     }, delayMs);
   };
 
-  scheduleNext();
+  // Commenting out to avoid duplicate training
+  // scheduleNext();
 };
 
-scheduleWeeklyTraining();
+// scheduleWeeklyTraining(); // Disabled - using rlTrainingJob instead
 
 // Initialize services
 console.log('✅ MetaAdsService initialized');
 console.log('✅ GoogleAdsService initialized');
 console.log('✅ AdsConfigService initialized');
+console.log('✅ AdsDecisionEngine initialized');
 console.log('✅ TrendDetectorService initialized');
 
 // Mount routes
 console.log('✅ Auth routes mounted (/api/auth)');
+console.log('✅ Social Auth routes mounted (/api/social-auth)');
+console.log('✅ Ads routes mounted (/api/ads)');
 console.log('✅ Brand routes mounted (/api/brands)');
 console.log('✅ Trend routes mounted (/api/trends)');
 console.log('✅ Copy routes mounted (/api/copy)');
@@ -188,10 +223,17 @@ console.log('✅ Publish routes mounted (/api/publish)');
 console.log('✅ Multi-platform routes mounted (/api/publish/multi)');
 console.log('✅ RL routes mounted (/api/rl)');
 
+// Start background jobs
+trendDetectionJob.start(360); // Every 6 hours
+engagementTrackingJob.start(240); // Every 4 hours
+rlTrainingJob.start(); // Every Monday at 2 AM
 
-// Start automatic trend detection every 30 minutes
+console.log('✅ Background jobs started');
+
+// Start automatic trend detection every 30 minutes (deprecated - replaced by job)
+// Keeping for backward compatibility but job takes precedence
 setInterval(async () => {
-  console.log('⏰ Running scheduled trend detection...');
+  console.log('⏰ Running scheduled trend detection (legacy)...');
   await trendDetector.detectAndSaveTrends();
 }, 30 * 60 * 1000);
 

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/brand_provider.dart';
 import '../providers/trends_provider.dart';
 import '../providers/copy_provider.dart';
+import '../providers/posts_provider.dart';
 import '../theme/app_theme.dart';
 import 'brand_screen.dart';
 import 'trends_screen.dart';
@@ -20,6 +21,7 @@ class _GeneratePostScreenState extends State<GeneratePostScreen> {
     final brandProvider = Provider.of<BrandProvider>(context, listen: false);
     final trendsProvider = Provider.of<TrendsProvider>(context, listen: false);
     final copyProvider = Provider.of<CopyProvider>(context, listen: false);
+    final postsProvider = Provider.of<PostsProvider>(context, listen: false);
 
     if (brandProvider.selectedBrand == null) {
       _showErrorSnackbar('Please select a brand');
@@ -34,11 +36,30 @@ class _GeneratePostScreenState extends State<GeneratePostScreen> {
     setState(() => _isGenerating = true);
 
     try {
-      await copyProvider.generateCopy(
-        brandId: brandProvider.selectedBrand!.id,
-        trendId: trendsProvider.selectedTrend!.id,
-        platform: _selectedPlatform,
-      );
+      if (_selectedPlatform == 'instagram') {
+        // For Instagram, generate image instead of copy
+        await copyProvider.generateImage(
+          brandId: brandProvider.selectedBrand!.id,
+          trendId: trendsProvider.selectedTrend!.id,
+          platform: _selectedPlatform,
+        );
+      } else {
+        // For other platforms, generate copy
+        await copyProvider.generateCopy(
+          brandId: brandProvider.selectedBrand!.id,
+          trendId: trendsProvider.selectedTrend!.id,
+          platform: _selectedPlatform,
+        );
+      }
+
+      // Add the generated post to PostsProvider's drafts list
+      if (copyProvider.currentPost != null) {
+        postsProvider.addDraft(copyProvider.currentPost!);
+      }
+
+      final message = _selectedPlatform == 'instagram' 
+          ? 'Image generated and saved to drafts!'
+          : 'Post generated and saved to drafts!';
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -46,10 +67,17 @@ class _GeneratePostScreenState extends State<GeneratePostScreen> {
             children: [
               Icon(Icons.check_circle, color: AppTheme.white),
               SizedBox(width: 12),
-              Text('Post generated!'),
+              Text(message),
             ],
           ),
           backgroundColor: AppTheme.success,
+          action: SnackBarAction(
+            label: 'View Drafts',
+            textColor: AppTheme.white,
+            onPressed: () {
+              // Navigate to drafts - assuming there's a navigation route
+            },
+          ),
         ),
       );
     } catch (e) {
@@ -198,6 +226,54 @@ class _GeneratePostScreenState extends State<GeneratePostScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Show image if available (for Instagram)
+                            if (copyProvider.currentPost!.imageUrl != null)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      copyProvider.currentPost!.imageUrl!,
+                                      width: double.infinity,
+                                      height: 250,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Container(
+                                          height: 250,
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          height: 250,
+                                          color: AppTheme.offWhite,
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.image, size: 48, color: AppTheme.mediumGray),
+                                              SizedBox(height: 8),
+                                              Text(
+                                                'Image preview unavailable',
+                                                style: TextStyle(color: AppTheme.mediumGray),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                ],
+                              ),
                             Text(
                               copyProvider.currentPost!.copy,
                               style: TextStyle(fontSize: 14, height: 1.6),
@@ -206,8 +282,8 @@ class _GeneratePostScreenState extends State<GeneratePostScreen> {
                               Padding(
                                 padding: EdgeInsets.only(top: 12),
                                 child: Chip(
-                                  avatar: Icon(Icons.image, size: 18),
-                                  label: Text('Image attached'),
+                                  avatar: Icon(Icons.check_circle, size: 18, color: AppTheme.teal),
+                                  label: Text('Image generated'),
                                   backgroundColor: AppTheme.teal.withOpacity(0.1),
                                 ),
                               ),

@@ -9,17 +9,28 @@ router.use(auth);
 // Create brand
 router.post('/', async (req, res, next) => {
   try {
-    const { brandName, industry, targetAudience, voiceTone, keywords } = req.body;
+    const { brandName, industry, targetAudience, brandVoice, keywords } = req.body;
     if (!brandName || !industry || !targetAudience) {
       return res.status(400).json({ error: 'brandName, industry, targetAudience are required' });
     }
+    
+    // Parse keywords if it's a comma-separated string
+    let keywordsArray = [];
+    if (keywords) {
+      if (Array.isArray(keywords)) {
+        keywordsArray = keywords;
+      } else if (typeof keywords === 'string') {
+        keywordsArray = keywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      }
+    }
+    
     const brand = await BrandProfile.create({
       userId: req.userId,
       brandName,
       industry,
       targetAudience,
-      brandVoice: voiceTone || 'professional',
-      keywords: Array.isArray(keywords) ? keywords : []
+      brandVoice: brandVoice || 'professional',
+      keywords: keywordsArray
     });
     res.status(201).json({ message: 'Brand created successfully', brand });
   } catch (err) { next(err); }

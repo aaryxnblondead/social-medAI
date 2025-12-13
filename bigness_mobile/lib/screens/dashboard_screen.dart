@@ -18,12 +18,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  String _formatNumber(int number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(1)}M';
+    } else if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}K';
+    }
+    return number.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              Provider.of<AnalyticsProvider>(context, listen: false).fetchAnalytics();
+            },
+          ),
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () {
@@ -96,6 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   physics: NeverScrollableScrollPhysics(),
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
+                  childAspectRatio: 1.1,
                   children: [
                     _StatCard(
                       icon: Icons.check_circle,
@@ -104,22 +120,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: AppTheme.teal,
                     ),
                     _StatCard(
-                      icon: Icons.edit,
-                      title: 'Drafts',
-                      value: data.drafts.toString(),
-                      color: AppTheme.mustard,
+                      icon: Icons.favorite,
+                      title: 'Total Likes',
+                      value: _formatNumber(data.totalLikes),
+                      color: Colors.red,
                     ),
                     _StatCard(
-                      icon: Icons.schedule,
-                      title: 'Scheduled',
-                      value: data.scheduled.toString(),
+                      icon: Icons.repeat,
+                      title: 'Shares/RTs',
+                      value: _formatNumber(data.totalRetweets),
                       color: AppTheme.success,
+                    ),
+                    _StatCard(
+                      icon: Icons.visibility,
+                      title: 'Total Views',
+                      value: _formatNumber(data.totalViews),
+                      color: AppTheme.info,
                     ),
                     _StatCard(
                       icon: Icons.trending_up,
                       title: 'Engagement',
-                      value: data.totalEngagement.toString(),
-                      color: AppTheme.info,
+                      value: _formatNumber(data.totalEngagement),
+                      color: AppTheme.mustard,
+                    ),
+                    _StatCard(
+                      icon: Icons.percent,
+                      title: 'Eng. Rate',
+                      value: '${data.engagementRate.toStringAsFixed(1)}%',
+                      color: AppTheme.teal,
                     ),
                   ],
                 ),

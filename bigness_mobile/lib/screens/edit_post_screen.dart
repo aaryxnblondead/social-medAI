@@ -8,6 +8,7 @@ class EditPostScreen extends StatefulWidget {
   final String initialCopy;
 
   const EditPostScreen({
+    super.key,
     required this.postId,
     required this.initialCopy,
   });
@@ -41,11 +42,13 @@ class _EditPostScreenState extends State<EditPostScreen> {
     final copyProvider = Provider.of<CopyProvider>(context, listen: false);
     try {
       await copyProvider.updateCopy(widget.postId, _copyController.text);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('✅ Post updated')),
+        const SnackBar(content: Text('✅ Post updated')),
       );
       Navigator.pop(context);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('❌ Error: $e')),
       );
@@ -56,17 +59,17 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Post'),
+        title: const Text('Edit Post'),
         actions: [
           if (_isEdited)
             TextButton(
               onPressed: _saveCopy,
-              child: Text('Save', style: TextStyle(color: Color(0xFF10B981))),
+              child: const Text('Save', style: TextStyle(color: Color(0xFF10B981))),
             ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,7 +77,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Post Content',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
@@ -87,7 +90,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
 
             // Copy editor
             TextField(
@@ -101,11 +104,11 @@ class _EditPostScreenState extends State<EditPostScreen> {
                 ),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: EdgeInsets.all(12),
+                contentPadding: const EdgeInsets.all(12),
                 counterText: '',
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Quick suggestions
             ExpansionTile(
@@ -115,21 +118,21 @@ class _EditPostScreenState extends State<EditPostScreen> {
               ),
               children: [
                 Padding(
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _TipItem('✓ Keep it under 280 characters'),
-                      _TipItem('✓ Use relevant hashtags'),
-                      _TipItem('✓ Add emojis for engagement'),
-                      _TipItem('✓ Include a call-to-action'),
-                      _TipItem('✓ Ask questions to encourage replies'),
+                      const _TipItem('✓ Keep it under 280 characters'),
+                      const _TipItem('✓ Use relevant hashtags'),
+                      const _TipItem('✓ Add emojis for engagement'),
+                      const _TipItem('✓ Include a call-to-action'),
+                      const _TipItem('✓ Ask questions to encourage replies'),
                     ],
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Add image button
             SizedBox(
@@ -146,15 +149,15 @@ class _EditPostScreenState extends State<EditPostScreen> {
                     ),
                   );
                 },
-                icon: Icon(Icons.image),
-                label: Text('Add Image'),
+                icon: const Icon(Icons.image),
+                label: const Text('Add Image'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Color(0xFF10B981),
-                  side: BorderSide(color: Color(0xFF10B981), width: 2),
+                  foregroundColor: const Color(0xFF10B981),
+                  side: const BorderSide(color: Color(0xFF10B981), width: 2),
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Actions
             if (_isEdited)
@@ -166,7 +169,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                     child: ElevatedButton(
                       onPressed: copyProvider.isLoading ? null : _saveCopy,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF10B981),
+                        backgroundColor: const Color(0xFF10B981),
                       ),
                       child: copyProvider.isLoading
                           ? SizedBox(
@@ -178,7 +181,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                                     AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : Text(
+                          : const Text(
                               '💾 Save Changes',
                               style: TextStyle(
                                 fontSize: 16,
@@ -200,12 +203,12 @@ class _EditPostScreenState extends State<EditPostScreen> {
 class _TipItem extends StatelessWidget {
   final String text;
 
-  const _TipItem(this.text);
+  const _TipItem(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Text(text, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
     );
   }

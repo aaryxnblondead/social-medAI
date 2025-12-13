@@ -61,15 +61,16 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.register(
+    final success = await authProvider.register(
       _emailController.text,
       _passwordController.text,
       _nameController.text,
       _accountType,
     );
 
-    if (authProvider.isLoggedIn) {
-      Navigator.of(context).pushReplacementNamed('/dashboard');
+    if (success && authProvider.isLoggedIn) {
+      // Navigate to onboarding after successful signup
+      Navigator.of(context).pushReplacementNamed('/onboarding');
     }
   }
 

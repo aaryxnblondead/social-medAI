@@ -72,22 +72,47 @@ class Analytics {
   final int drafts;
   final int scheduled;
   final int totalEngagement;
+  final int totalLikes;
+  final int totalRetweets;
+  final int totalReplies;
+  final int totalViews;
+  final int totalImpressions;
+  final int totalReach;
+  final double engagementRate;
+  final int recentPosts7Days;
+  final String bestPlatform;
 
   Analytics({
     required this.publishedPosts,
     required this.drafts,
     required this.scheduled,
     required this.totalEngagement,
+    required this.totalLikes,
+    required this.totalRetweets,
+    required this.totalReplies,
+    required this.totalViews,
+    required this.totalImpressions,
+    required this.totalReach,
+    required this.engagementRate,
+    required this.recentPosts7Days,
+    required this.bestPlatform,
   });
 
   factory Analytics.fromJson(Map<String, dynamic> json) {
-    final overview = json['overview'] ?? {};
-    final allTime = json['allTime'] ?? {};
     return Analytics(
-      publishedPosts: overview['publishedPosts'] ?? 0,
-      drafts: overview['draftPosts'] ?? 0,
-      scheduled: overview['scheduledPosts'] ?? 0,
-      totalEngagement: allTime['totalEngagement'] ?? 0,
+      publishedPosts: json['publishedPosts'] ?? 0,
+      drafts: json['drafts'] ?? 0,
+      scheduled: json['scheduled'] ?? 0,
+      totalEngagement: json['totalEngagement'] ?? 0,
+      totalLikes: json['totalLikes'] ?? 0,
+      totalRetweets: json['totalRetweets'] ?? 0,
+      totalReplies: json['totalReplies'] ?? 0,
+      totalViews: json['totalViews'] ?? 0,
+      totalImpressions: json['totalImpressions'] ?? 0,
+      totalReach: json['totalReach'] ?? 0,
+      engagementRate: (json['engagementRate'] ?? 0).toDouble(),
+      recentPosts7Days: json['recentPosts7Days'] ?? 0,
+      bestPlatform: json['bestPlatform'] ?? 'twitter',
     );
   }
 }

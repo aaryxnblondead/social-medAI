@@ -30,13 +30,13 @@ class ImageProvider with ChangeNotifier {
         notifyListeners();
       }
 
-      final response = await ApiService.post('/images/generate', body: {
+      final response = await ApiService.post('/images/generate-for-post', body: {
         'postId': postId,
         'prompt': prompt,
         'style': style,
       });
 
-      _generatedImageUrl = response['imageUrl'];
+      _generatedImageUrl = response['image']?['url'] ?? response['imageUrl'];
       _generationProgress = 1.0;
     } catch (e) {
       _error = e.toString();

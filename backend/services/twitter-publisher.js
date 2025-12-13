@@ -1,17 +1,68 @@
 const axios = require('axios');
+const { User } = require('../models');
 
 class TwitterPublisherService {
   constructor() {
     this.apiUrl = 'https://api.twitter.com/2';
-    this.bearerToken = process.env.TWITTER_BEARER_TOKEN;
-    this.accessToken = process.env.TWITTER_ACCESS_TOKEN;
-    this.accessTokenSecret = process.env.TWITTER_ACCESS_TOKEN_SECRET;
-    this.consumerKey = process.env.TWITTER_CONSUMER_KEY;
-    this.consumerSecret = process.env.TWITTER_CONSUMER_SECRET;
+  }
+
+  async getUserBearerToken(userId) {
+    const user = await User.findById(userId).select('socialAccounts.twitter');
+    const twitter = user?.socialAccounts?.twitter;
+    if (!twitter?.accessToken) {
+      throw new Error('Twitter not connected for this user');
+    }
+
+    // Refresh if token is near expiry (within 5 minutes) and we have a refresh token
+    const expiry = twitter.tokenExpiry ? new Date(twitter.tokenExpiry).getTime() : null;
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+    if (expiry && twitter.refreshToken && (expiry - now) <= fiveMinutes) {
+      const refreshed = await this.refreshAccessToken(userId, twitter.refreshToken);
+      return refreshed;
+    }
+
+    return twitter.accessToken;
+  }
+
+  async refreshAccessToken(userId, refreshToken) {
+    try {
+      const resp = await axios.post(
+        'https://api.twitter.com/2/oauth2/token',
+        new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          client_id: process.env.TWITTER_CLIENT_ID
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: `Basic ${Buffer.from(
+              `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
+            ).toString('base64')}`
+          }
+        }
+      );
+
+      const { access_token, refresh_token, expires_in } = resp.data;
+
+      await User.findByIdAndUpdate(userId, {
+        $set: {
+          'socialAccounts.twitter.accessToken': access_token,
+          'socialAccounts.twitter.refreshToken': refresh_token || refreshToken,
+          'socialAccounts.twitter.tokenExpiry': new Date(Date.now() + (expires_in || 3600) * 1000)
+        }
+      });
+
+      return access_token;
+    } catch (err) {
+      // If refresh fails, bubble up a clear error so caller can handle (e.g., prompt re-connect)
+      throw new Error(`Twitter token refresh failed: ${err.response?.data?.error_description || err.message}`);
+    }
   }
 
   // Post tweet (text only)
-  async postTweet(text) {
+  async postTweet(userId, text) {
     try {
       console.log('📤 Posting tweet to Twitter...');
 
@@ -23,6 +74,7 @@ class TwitterPublisherService {
         throw new Error('Tweet exceeds 280 character limit');
       }
 
+      const bearer = await this.getUserBearerToken(userId);
       const response = await axios.post(
         `${this.apiUrl}/tweets`,
         {
@@ -30,7 +82,7 @@ class TwitterPublisherService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.bearerToken}`,
+            'Authorization': `Bearer ${bearer}`,
             'Content-Type': 'application/json'
           }
         }
@@ -49,7 +101,7 @@ class TwitterPublisherService {
   }
 
   // Post tweet with image
-  async postTweetWithImage(text, imageUrl) {
+  async postTweetWithImage(userId, text, imageUrl) {
     try {
       console.log('📤 Posting tweet with image to Twitter...');
 
@@ -72,6 +124,7 @@ class TwitterPublisherService {
 
       // In production, you'd upload the image to Twitter media endpoint
       // For now, we'll post text-only and note the image URL
+      const bearer = await this.getUserBearerToken(userId);
       const response = await axios.post(
         `${this.apiUrl}/tweets`,
         {
@@ -79,7 +132,7 @@ class TwitterPublisherService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.bearerToken}`,
+            'Authorization': `Bearer ${bearer}`,
             'Content-Type': 'application/json'
           }
         }
@@ -99,10 +152,11 @@ class TwitterPublisherService {
   }
 
   // Get tweet metrics
-  async getTweetMetrics(tweetId) {
+  async getTweetMetrics(userId, tweetId) {
     try {
       console.log(`📊 Fetching metrics for tweet ${tweetId}...`);
 
+      const bearer = await this.getUserBearerToken(userId);
       const response = await axios.get(
         `${this.apiUrl}/tweets/${tweetId}`,
         {
@@ -110,7 +164,7 @@ class TwitterPublisherService {
             'tweet.fields': 'public_metrics,created_at'
           },
           headers: {
-            'Authorization': `Bearer ${this.bearerToken}`
+            'Authorization': `Bearer ${bearer}`
           }
         }
       );
@@ -131,15 +185,16 @@ class TwitterPublisherService {
   }
 
   // Delete tweet
-  async deleteTweet(tweetId) {
+  async deleteTweet(userId, tweetId) {
     try {
       console.log(`🗑️ Deleting tweet ${tweetId}...`);
 
+      const bearer = await this.getUserBearerToken(userId);
       const response = await axios.delete(
         `${this.apiUrl}/tweets/${tweetId}`,
         {
           headers: {
-            'Authorization': `Bearer ${this.bearerToken}`
+            'Authorization': `Bearer ${bearer}`
           }
         }
       );
@@ -153,7 +208,7 @@ class TwitterPublisherService {
   }
 
   // Reply to tweet
-  async replyToTweet(text, inReplyToTweetId) {
+  async replyToTweet(userId, text, inReplyToTweetId) {
     try {
       console.log(`💬 Replying to tweet ${inReplyToTweetId}...`);
 
@@ -161,6 +216,7 @@ class TwitterPublisherService {
         throw new Error('Reply exceeds 280 character limit');
       }
 
+      const bearer = await this.getUserBearerToken(userId);
       const response = await axios.post(
         `${this.apiUrl}/tweets`,
         {
@@ -171,7 +227,7 @@ class TwitterPublisherService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.bearerToken}`,
+            'Authorization': `Bearer ${bearer}`,
             'Content-Type': 'application/json'
           }
         }

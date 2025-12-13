@@ -76,4 +76,12 @@ class PostsProvider with ChangeNotifier {
       fetchPublished(),
     ]);
   }
+
+  // Add a newly generated post to drafts without a full API call
+  void addDraft(GeneratedPost post) {
+    if (!_drafts.any((p) => p.id == post.id)) {
+      _drafts.insert(0, post);
+      notifyListeners();
+    }
+  }
 }
