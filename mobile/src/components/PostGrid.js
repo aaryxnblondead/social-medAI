@@ -1,34 +1,37 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { themeStyles } from '../theme/colors';
+import { themeStyles, lightTheme } from '../theme/colors';
 
-export default function PostGrid({ theme, posts = [] }) {
+const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const postStatusIcons = {
+  published: '✓',
+  scheduled: '⏰',
+  draft: '📝',
+  generating: '⚡',
+};
+
+export default function PostGrid({ theme = lightTheme, posts = [] }) {
   const styles = themeStyles(theme);
-  
-  const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  const postStatusIcons = {
-    published: '✓',
-    scheduled: '⏰',
-    draft: '📝',
-    generating: '🚀',
-  };
 
   return (
-    <View style={[styles.card, { padding: 20 }]}>
-      <Text style={styles.heading}>Posts This Week</Text>
+    <View style={[styles.card, localStyles.card]}>
+      <View style={localStyles.headerRow}>
+        <Text style={styles.heading}>Publishing Rhythm</Text>
+        <Text style={[styles.caption, { color: theme.textMuted }]}>7-day view</Text>
+      </View>
       <View style={localStyles.grid}>
         {weekDays.map((day, idx) => {
           const post = posts[idx];
           const status = post?.status || null;
           const icon = status ? postStatusIcons[status] : '';
-          const bgColor = status === 'published' ? theme.success : status ? theme.warning : theme.border;
-          
+          const palette = getPalette(theme, status);
+
           return (
-            <View key={idx} style={localStyles.dayContainer}>
-              <View style={[localStyles.dayBox, { backgroundColor: bgColor }]}>
+            <View key={day} style={localStyles.dayContainer}>
+              <View style={[localStyles.dayBox, { backgroundColor: palette.bg, borderColor: palette.border }]}>
                 <Text style={{ fontSize: 18 }}>{icon}</Text>
               </View>
-              <Text style={[styles.caption, { marginTop: 4, textAlign: 'center' }]}>{day}</Text>
+              <Text style={[styles.caption, { marginTop: 6 }]}>{day}</Text>
             </View>
           );
         })}
@@ -37,8 +40,41 @@ export default function PostGrid({ theme, posts = [] }) {
   );
 }
 
+function getPalette(theme, status) {
+  if (status === 'published') {
+    return { bg: theme.chip, border: theme.accent };
+  }
+  if (status === 'scheduled') {
+    return { bg: theme.backgroundAlt, border: theme.border };
+  }
+  if (status === 'draft' || status === 'generating') {
+    return { bg: theme.cardSoft, border: theme.border };
+  }
+  return { bg: '#F1F4F9', border: 'transparent' };
+}
+
 const localStyles = StyleSheet.create({
-  grid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 },
-  dayContainer: { alignItems: 'center' },
-  dayBox: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  card: {
+    paddingVertical: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  grid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  dayContainer: {
+    alignItems: 'center',
+  },
+  dayBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
 });

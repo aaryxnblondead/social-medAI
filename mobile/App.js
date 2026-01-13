@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { StatusBar } from 'react-native';
 import axios from 'axios';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,7 +20,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [brand, setBrand] = useState(null);
   const baseURL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-  const api = axios.create({ baseURL });
+  const api = useMemo(() => axios.create({ baseURL }), [baseURL]);
   const [mode, setMode] = useState('light');
   const appTheme = useMemo(() => (mode === 'dark' ? darkTheme : lightTheme), [mode]);
   const navTheme = useMemo(() => {
@@ -37,22 +38,30 @@ export default function App() {
     };
   }, [appTheme, mode]);
 
-  const appContextValue = {
-    api,
-    token,
-    setToken,
-    user,
-    setUser,
-    brand,
-    setBrand,
-    mode,
-    setMode,
-  };
+  const appContextValue = useMemo(
+    () => ({
+      api,
+      token,
+      setToken,
+      user,
+      setUser,
+      brand,
+      setBrand,
+      mode,
+      setMode,
+      theme: appTheme,
+    }),
+    [api, token, user, brand, mode, appTheme]
+  );
 
   return (
     <AppProvider value={appContextValue}>
       <NavigationContainer theme={navTheme}>
-        <Stack.Navigator initialRouteName="Login">
+        <StatusBar barStyle={mode === 'dark' ? 'light-content' : 'dark-content'} />
+        <Stack.Navigator
+          initialRouteName="Login"
+          screenOptions={{ headerShown: false, animation: 'fade' }}
+        >
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen name="Dashboard" component={DashboardScreen} />

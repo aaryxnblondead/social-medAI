@@ -1,11 +1,18 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { lightTheme } from '../theme/colors';
 
-export default function FAB({ onPress, icon = '+', bottom = 90 }) {
+export default function FAB({ onPress, icon = '+', bottom = 120, theme = lightTheme }) {
   return (
     <TouchableOpacity
-      style={[styles.fab, { bottom }]}
+      style={[
+        styles.fab,
+        {
+          bottom,
+          backgroundColor: theme.primary,
+          shadowColor: theme.primary,
+        },
+      ]}
       onPress={onPress}
       activeOpacity={0.9}
     >
@@ -17,22 +24,20 @@ export default function FAB({ onPress, icon = '+', bottom = 90 }) {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: lightTheme.primary,
+    right: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 10,
   },
   icon: {
-    fontSize: 28,
+    fontSize: 30,
     color: '#FFF',
-    fontWeight: '300',
+    fontWeight: '600',
   },
 });
