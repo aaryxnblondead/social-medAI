@@ -1,21 +1,16 @@
 import cron from 'node-cron';
-import { getRedis } from '../util/redis.js';
 import { fetchTrendsFromSources } from '../services/trends.js';
 import { syncEngagementForUser } from './engagement.js';
 import { User } from '../schema/user.js';
 import { trainWeeklyPolicies } from './rl.js';
 
 export function startJobs() {
-  const redis = getRedis();
   // Every 15 minutes: prefetch tech and business trends
   cron.schedule('*/15 * * * *', async () => {
     try {
       const categories = ['technology', 'business'];
       for (const category of categories) {
-        const items = await fetchTrendsFromSources({ category });
-        if (redis) {
-          await redis.set(`trends:${category}`, JSON.stringify(items), 'EX', 60 * 20);
-        }
+        await fetchTrendsFromSources({ category, refresh: true });
       }
     } catch (e) {
       // Best-effort cache; swallow errors

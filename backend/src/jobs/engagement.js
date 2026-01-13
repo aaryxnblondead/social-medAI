@@ -16,20 +16,20 @@ export async function syncEngagementForUser(userId) {
         const r = await client.get(`/tweets/${post.platformPostId}`, { params: { 'tweet.fields': 'public_metrics' } });
         const m = r.data?.data?.public_metrics;
         post.engagement = {
-          like_count: m?.like_count || 0,
-          retweet_count: m?.retweet_count || 0,
-          reply_count: m?.reply_count || 0,
-          impression_count: m?.impression_count || 0
+          likes: m?.like_count || 0,
+          comments: m?.reply_count || 0,
+          shares: (m?.retweet_count || 0) + (m?.quote_count || 0),
+          impressions: m?.impression_count || 0
         };
       }
       // LinkedIn / Facebook / Instagram fetching can be added similarly
       // Compute reward: R = (L + 3C + 5S) / Impressions (approximate shares from retweets)
-      const L = post.engagement?.like_count || 0;
-      const C = post.engagement?.reply_count || 0;
-      const S = post.engagement?.retweet_count || 0;
-      const Impr = post.engagement?.impression_count || 1;
-      const R = (L + 3*C + 5*S) / Impr;
-      post.reward = Math.min(R * 100, 5.0);
+      const L = post.engagement?.likes || 0;
+      const C = post.engagement?.comments || 0;
+      const S = post.engagement?.shares || 0;
+      const denominator = post.engagement?.impressions || L + C + S || 1;
+      const R = (L + 3 * C + 5 * S) / denominator;
+      post.reward = Number(Math.min(R * 100, 5.0).toFixed(2));
       await post.save();
     } catch {}
   }

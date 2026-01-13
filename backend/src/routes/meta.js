@@ -3,6 +3,7 @@ import axios from 'axios';
 import { verifyToken } from '../util/auth.js';
 import { User } from '../schema/user.js';
 import { Post } from '../schema/post.js';
+import { publishToFacebookPage, publishToInstagramBusiness } from '../services/publish.js';
 
 const router = express.Router();
 router.use(verifyToken);
@@ -55,22 +56,13 @@ router.post('/pages/:pageId/publish', async (req, res) => {
     const user = await User.findById(req.userId);
     const token = user?.socialAccounts?.facebook?.accessToken;
     if (!token) return res.status(400).json({ error: 'facebook not connected' });
-    const client = fbClient(token);
-    let result = null;
-    if (imageUrl) {
-      // Publish photo to page
-      const r = await client.post(`/${req.params.pageId}/photos`, null, { params: { url: imageUrl, caption: text || '' } });
-      result = { id: r.data?.id, url: null };
-    } else {
-      const r = await client.post(`/${req.params.pageId}/feed`, null, { params: { message: text || '' } });
-      result = { id: r.data?.id, url: null };
-    }
+    const result = await publishToFacebookPage({ accessToken: token, pageId: req.params.pageId, text, imageUrl });
     if (postId) {
       await Post.findOneAndUpdate({ _id: postId, userId: req.userId }, {
         status: 'published',
         publishedAt: new Date(),
         platformPostId: result.id || null,
-        platformUrl: null
+        platformUrl: result.url || null
       });
     }
     res.json({ ok: true, result });
@@ -79,28 +71,25 @@ router.post('/pages/:pageId/publish', async (req, res) => {
 
 router.post('/instagram/:igBusinessId/publish', async (req, res) => {
   try {
-    // Note: IG requires creating a container then publishing
     const { caption, imageUrl, postId } = req.body;
     const user = await User.findById(req.userId);
-    const token = user?.socialAccounts?.facebook?.accessToken; // IG uses FB Graph
+    const token = user?.socialAccounts?.facebook?.accessToken;
     if (!token) return res.status(400).json({ error: 'instagram not connected via facebook token' });
-    const client = fbClient(token);
-    const igId = req.params.igBusinessId;
-    // Step 1: create media container
-    const container = await client.post(`/${igId}/media`, null, { params: { image_url: imageUrl, caption: caption || '' } });
-    const creationId = container.data?.id;
-    // Step 2: publish container
-    const publish = await client.post(`/${igId}/media_publish`, null, { params: { creation_id: creationId } });
-    const id = publish.data?.id;
+    const result = await publishToInstagramBusiness({
+      accessToken: token,
+      igBusinessId: req.params.igBusinessId,
+      caption,
+      imageUrl
+    });
     if (postId) {
       await Post.findOneAndUpdate({ _id: postId, userId: req.userId }, {
         status: 'published',
         publishedAt: new Date(),
-        platformPostId: id || null,
-        platformUrl: null
+        platformPostId: result.id || null,
+        platformUrl: result.url || null
       });
     }
-    res.json({ ok: true, id });
+    res.json({ ok: true, result });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

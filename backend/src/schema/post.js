@@ -2,12 +2,33 @@ import mongoose from 'mongoose';
 
 const PostSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, index: true, required: true },
-  brandId: { type: mongoose.Schema.Types.ObjectId, index: true },
+  brandId: { type: mongoose.Schema.Types.ObjectId, index: true, required: true },
   platform: { type: String, enum: ['twitter', 'linkedin', 'facebook', 'instagram'], default: 'twitter' },
   status: { type: String, enum: ['draft', 'published'], default: 'draft' },
   content: {
-    copy: String,
-    graphicUrl: String
+    copy: { type: String, default: '' },
+    graphicUrl: { type: String, default: '' }
+  },
+  trend: {
+    id: String,
+    title: String,
+    description: String,
+    url: String,
+    category: String,
+    source: String,
+    imageUrl: String,
+    metrics: {
+      growth: String,
+      volume: String,
+      sentiment: String
+    }
+  },
+  brandSnapshot: {
+    name: String,
+    persona: String,
+    industry: String,
+    tone: String,
+    objective: String
   },
   platformPostId: String,
   platformUrl: String,
